@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche de chemins</title>
+    <style>
+        svg {
+            width: 1000px;
+            height: 1000px;
+        }
+        #svg-container{
+            width: 500%;
+            height: 500%;
+        }
+        #_x37_{
+            transform-origin: 645.02px 924.13px;
+            transform: scale(1.5);
+            fill: #00ffd5;
+        }
+
+    </style>
+    <script>
+        
+        fetch('./img/V1.svg')
+        .then(response => response.text()) // Récupère le contenu du fichier SVG sous forme de texte
+        .then(data => {
+            document.getElementById('svg-container').innerHTML = data; // Injecte le SVG dans le DOM
+        })
+        .catch(error => console.log(error));
+
+
+        function convertIntToFormat(number) {
+            // Convertir le nombre en chaîne pour accéder à ses caractères
+            let numStr = number.toString();
+
+            // Si le nombre n'a qu'un chiffre, ajouter un zéro ou un underscore vide
+            if (numStr.length === 1) {
+                return '_x3' + numStr + '_';
+            }
+
+            // Retourner le format "_x3a_b" où a est le premier chiffre et b le second
+            return '_x3' + numStr[0] + '_' + numStr[1];
+        }
+
+        // Fonction pour envoyer les données au script PHP et afficher les résultats
+        function findPaths() {
+            let layer8 = document.getElementById('Layer_8');
+            let layer7 = document.getElementById('Layer_7');
+            var maxLength = document.getElementById("max_length").value;
+            var positionId = document.getElementById("position_id").value;
+
+            // Création d'une requête AJAX pour envoyer les données au serveur
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "./php/get_path.php", true); // Ici on appelle le script PHP
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    // Afficher la réponse (les chemins possibles)
+                    data = JSON.parse(xhr.responseText);
+                    for (let i = 0; i < data.length; i++) {
+                        console.log(data[i]);
+                        let randomColor = Math.floor(Math.random()*16777215).toString(16);
+                        randomColor = "#" + randomColor;
+                        for (let j = 0; j < data[i].length; j++) {
+                            let tmp_id = convertIntToFormat(data[i][j]);
+                            console.log(tmp_id);
+                            let elem = layer8.querySelector('#' + tmp_id);
+                            if (elem == null) {
+                                elem = layer8.querySelector('[data-name="' + tmp_id + '"]');
+                            }
+                            if (elem != null) {
+                                elem.querySelectorAll('circle')[1].style.fill = randomColor;
+                            }
+                            else{
+                                elem = layer7.querySelector('#' + tmp_id);
+                                if (elem == null) {
+                                    elem = layer7.querySelector('[data-name="' + tmp_id + '"]');
+                                }
+                                if (elem != null) {
+                                    elem.querySelectorAll('rect')[2].style.fill = randomColor;
+                                }
+                            }
+
+                            
+                            console.log(elem);
+                        }
+                    }
+                    document.getElementById("result").innerHTML = xhr.responseText;
+                }
+            };
+
+            // Envoi des données (POST)
+            xhr.send("max_length=" + maxLength + "&position=" + positionId);
+        }
+
+    </script>
+</head>
+<body>
+    <h1>Recherche de chemins possibles</h1>
+
+    <label for="position_id">ID de départ :</label>
+    <input type="text" id="position_id" name="position_id" placeholder="Entrez l'ID de départ"><br><br>
+
+    <label for="max_length">Nombre maximum de pas :</label>
+    <input type="number" id="max_length" name="max_length" placeholder="Entrez le nombre de pas"><br><br>
+
+    <button onclick="findPaths()">Trouver les chemins</button>
+
+    <h2>Résultats :</h2>
+    <div id="result"></div>
+    <div id="svg-container"></div>
+</body>
+
+</html>

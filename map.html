@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COSMAIL map</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/carte.css">
+</head>
+
+<body>
+    <div class="div_page">
+        <div class="div_carte">
+            <div class="div_piont">
+                <div class="div_plane">
+                    <div id="svg-plane"></div>
+                </div>
+            </div>
+            <div id="svg-container">
+            </div>
+        </div>
+        <div class="div_controls">
+           
+            <div class="div_zoom">
+                <button id="zoom_in">+</button>
+                <div class="div_zoom_out_bar">
+                    <div class="div_zoom_in_bar"></div>
+                </div>
+                <button id="zoom_out">-</button>
+                <button id="reset" onclick="reset_svg()">Reset</button>
+            </div>
+        </div>
+        <div class="div_all_cards"></div>
+    </div>
+</body>
+<script src="js/cards.js"></script>
+<script>
+
+
+    fetch('./img/V1.svg')
+        .then(response => response.text()) // Récupère le contenu du fichier SVG sous forme de texte
+        .then(data => {
+            document.getElementById('svg-container').innerHTML += data; // Injecte le SVG dans le DOM
+            let layer8 = document.getElementById('Layer_8');
+
+            for (let i = 0; i < layer8.children.length; i++) {
+                let ville = layer8.children[i];
+                ville.addEventListener('mouseover', function () {
+                    city_hover(ville, 1);
+                });
+                ville.addEventListener('mouseout', function () {
+                    city_hover(ville, 0);
+                });
+                ville.addEventListener('click', function () {
+                    deplace_plane(ville);
+                });
+            }
+            let villes_layer = document.getElementById('Layer_8');
+            for (let i = 0; i < villes_layer.children.length; i++) {
+                let ville = villes_layer.children[i];
+                let position_tmp = ville.querySelector('circle');
+                if (position_tmp) {
+                    let x = position_tmp.getAttribute('cx');
+                    let y = position_tmp.getAttribute('cy');
+
+                    ville.style.transformOrigin = `${x}px ${y}px`;
+                    // ville.style.transform = `rotate(${-angle}deg)`;
+                    ville.style.transition = 'all 0.2s ease';
+                }
+            }
+
+            fetch('./img/plane.svg')
+                .then(response => response.text()) // Récupère le contenu du fichier SVG sous forme de texte
+                .then(data => {
+                    document.getElementById('svg-plane').innerHTML = data;
+                    console.log(document.getElementsByClassName('div_plane')[0]);
+                    document.getElementsByClassName('div_plane')[0].addEventListener('mousedown', function (event) {
+                        console.log('down');
+                        plane_dragging = true;
+                        click_down_plane = [event.clientX, event.clientY];  // Enregistre la position de la souris lors du clic
+                    });
+                    document.getElementsByClassName('div_plane')[0].addEventListener('mouseup', function () {
+                        plane_dragging = false;
+                    });
+
+                })
+                .catch(error => console.log(error));
+
+
+
+
+        })
+        .catch(error => console.log(error));
+
+
+
+    let click_down = [0, 0];
+    let translates = [0, 0];
+    let dragging = false;
+    let scale = 1;
+    let angle = 0;
+
+    let click_down_plane = [0, 0];
+    let translates_plane = [0, 0];
+    let plane_dragging = false;
+
+    function move_plane(event) {
+        let x_move = (event.clientX - click_down_plane[0]) / scale;
+        let y_move = (event.clientY - click_down_plane[1]) / scale;
+
+        translates_plane[0] += x_move;
+        translates_plane[1] += y_move;
+
+        document.getElementsByClassName('div_plane')[0].style.transform = `translate(${translates_plane[0]}px, ${translates_plane[1]}px)`;
+
+        click_down_plane = [event.clientX, event.clientY];
+    }
+
+    function deplace_plane(ville) {
+        let position = ville.getBoundingClientRect();
+        let id = ville.getAttribute('id');
+        // Obtenir les dimensions du conteneur SVG
+        const svgContainer = document.getElementById('svg-container');
+        const svgRect = svgContainer.getBoundingClientRect();
+        // Obtenir la position de la ville par rapport au conteneur SVG
+        let cityLeft = position.left - svgRect.left;
+        let cityTop = position.top - svgRect.top - 15;
+        // Appliquer la rotation
+        let rotatedLeft = cityLeft * Math.cos(angle * Math.PI / 180) - cityTop * Math.sin(angle * Math.PI / 180);
+        let rotatedTop = cityLeft * Math.sin(angle * Math.PI / 180) + cityTop * Math.cos(angle * Math.PI / 180);
+        // Ajuster pour la translation (les valeurs en pixels)
+        let adjustedX = (rotatedLeft) / scale;
+        let adjustedY = (rotatedTop) / scale;
+        console.log(adjustedX, adjustedY)
+        get_next_authorized_step(16).then(paths => {
+            ville = id.split('-')[0];
+            ville = ville.substring(3);
+            ville = ville.replace('_', '');
+            if (paths.length == 0) {
+            console.log('not authorized');
+            translates_plane = [adjustedX, adjustedY];
+            document.getElementsByClassName('div_plane')[0].style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
+            document.getElementsByClassName('div_plane')[0].setAttribute('data-ville', id);
+            return;
+            }
+            if (paths.includes(ville)) {
+            translates_plane = [adjustedX, adjustedY];
+            document.getElementsByClassName('div_plane')[0].style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
+            document.getElementsByClassName('div_plane')[0].setAttribute('data-ville', id);
+            } else {
+            console.log('not authorized');
+            }
+        }).catch(error => {
+            console.error('Error getting authorized steps:', error);
+        });
+    }
+    function findPaths(positions, startPosition, maxLength) {
+
+        let next_steps = [];
+        positions.forEach(link => {
+            if (link[1] == startPosition) {
+                next_steps.push(link);
+            }
+            else if (link[2] == startPosition) {
+                next_steps.push(link);
+            }
+        });
+        let paths = [];
+        next_steps.forEach(step => {
+            if (maxLength-step[3] >=0){
+                let sub_paths = findPaths(positions, step[2], maxLength-step[3]);
+
+                if (step[1] == startPosition){
+                    paths.push(step[2]);
+                }
+                else{
+                    paths.push(step[1]);
+                }
+            }
+        });
+        return paths;
+    }
+
+    function get_next_authorized_step(nb_step) {
+        let plane = document.getElementsByClassName('div_plane')[0];
+        let ville = plane.getAttribute('data-ville');
+        if (ville == null) {
+            return Promise.resolve([]); // Retourner une promesse résolue avec un tableau vide
+        }
+        ville = ville.split('-')[0];
+        ville = ville.substring(3);
+        ville = ville.replace('_', '');
+        ville = parseInt(ville);
+
+        return fetch('./php/get_path.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ position: ville })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            return findPaths(data, ville, nb_step); // Retourner le résultat après avoir trouvé les chemins
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+            return []; // Retourner un tableau vide en cas d'erreur
+        });
+    }
+
+
+    function city_hover(city, etat) {
+        if (etat == 0) {
+            city.style.transform = 'scale(1)';
+            city.style.filter = '';
+            return;
+        }
+        else if (etat == 1) {
+            city.style.transform = 'scale(1.1)' ;
+            city.style.filter = 'drop-shadow(0px 5px 10px rgba(0, 0, 0, 0.35))';
+        }
+    }
+
+    // function rotated(an, event) {
+    //     angle += an;
+    //     let svg_parent = document.getElementById('svg-container');
+    //     svg_parent.style.transform = `rotate(${angle}deg)`;
+
+    //     let villes_layer = document.getElementById('Layer_8');
+    //     for (let i = 0; i < villes_layer.children.length; i++) {
+    //         let ville = villes_layer.children[i];
+    //         let position_tmp = ville.querySelector('circle');
+    //         if (position_tmp) {
+    //             let x = position_tmp.getAttribute('cx');
+    //             let y = position_tmp.getAttribute('cy');
+
+    //             ville.style.transformOrigin = `${x}px ${y}px`;
+    //             ville.style.transform = `rotate(${-angle}deg)`;
+    //         }
+    //     }
+    //     let player_places = document.getElementById('Layer_12');
+    //     for (let i = 0; i < player_places.children.length; i++) {
+    //         let place = player_places.children[i];
+    //         let position_tmp = place.querySelector('circle');
+    //         if (position_tmp) {
+    //             let x = position_tmp.getAttribute('cx');
+    //             let y = position_tmp.getAttribute('cy');
+
+    //             place.style.transformOrigin = `${x}px ${y}px`;
+    //             place.style.transform = `rotate(${-angle}deg)`;
+    //         }
+    //     }
+    // }
+
+    function mouve_svg(event) {
+        if (!dragging) {
+            return `translate(${translates[0]}px, ${translates[1]}px)`;
+        }
+        let x = event.clientX - click_down[0];
+        let y = event.clientY - click_down[1];
+        translates[0] += x;
+        translates[1] += y;
+        click_down = [event.clientX, event.clientY];
+        return `translate(${translates[0]}px, ${translates[1]}px)`;
+    }
+
+    function zoom_svg(event) {
+        event.preventDefault();  // Empêche le défilement par défaut
+        let zoom = event.deltaY * -0.001;  // Modifie la sensibilité
+        scale += zoom * scale;
+
+        if (scale > 3) {
+            scale = 3;
+        }
+        if (scale < 0.5) {
+            scale = 0.5;
+        }
+        return scale;
+    }
+
+
+    function reset_svg() {
+        translates = [0, 0];
+        scale = 1;
+        angle = 0;  // Réinitialiser l'angle
+        let svg_parent = document.getElementsByClassName('div_carte')[0];
+        svg_parent.style.transform = `translate(${translates[0]}px, ${translates[1]}px) scale(${scale})`;
+        let zoom_bar = document.getElementsByClassName('div_zoom_in_bar')[0];
+        zoom_bar.style.height = '';
+    }
+
+
+    document.addEventListener('wheel', function (event) {
+        event.preventDefault();
+        let zoom = zoom_svg(event);
+        scale = zoom;
+        let move = mouve_svg(event);
+        let svg_parent = document.getElementsByClassName('div_carte')[0];
+        svg_parent.style.transform = `${move} scale(${scale})`;
+        let zoom_bar = document.getElementsByClassName('div_zoom_in_bar')[0];
+        zoom_bar.style.height = `${100 / 3 * scale}%`;
+    });
+
+    document.addEventListener('mousemove', function (event) {
+        let svg_parent = document.getElementsByClassName('div_carte')[0];
+        svg_parent.style.transform = mouve_svg(event) + ` scale(${scale})`;
+        if (plane_dragging) {
+            move_plane(event)
+        }
+    });
+
+    
+
+    document.addEventListener('mousedown', function (event) {
+        if (event.button !== 1) {
+            return;
+        }
+        document.body.style.cursor = 'grabbing';
+        dragging = true;
+        click_down = [event.clientX, event.clientY];
+    });
+
+    document.addEventListener('mouseup', function () {
+        document.body.style.cursor = '';
+
+        dragging = false;
+        dragging_plane = false;
+    });
+
+    // bnt zoom
+    document.getElementById('zoom_in').addEventListener('click', function () {
+        scale += 0.1 * scale;
+        if (scale > 3) {
+            scale = 3;
+        }
+        let svg_parent = document.getElementsByClassName('div_carte')[0];
+        svg_parent.style.transform = `translate(${translates[0]}px, ${translates[1]}px) scale(${scale})`;
+        let zoom_bar = document.getElementsByClassName('div_zoom_in_bar')[0];
+        zoom_bar.style.height = `${100 / 3 * scale}%`;
+    });
+
+    document.getElementById('zoom_out').addEventListener('click', function () {
+        scale -= 0.1 * scale;
+        if (scale < 0.5) {
+            scale = 0.5;
+        }
+        let svg_parent = document.getElementsByClassName('div_carte')[0];
+        svg_parent.style.transform = `translate(${translates[0]}px, ${translates[1]}px) scale(${scale})`;
+        let zoom_bar = document.getElementsByClassName('div_zoom_in_bar')[0];
+        zoom_bar.style.height = `${100 / 3 * scale}%`;
+    });
+
+    
+</script>
+
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COSMAIL carts</title>
+    <link rel="stylesheet" href="css/carte.css">
+</head>
+<body>
+    <div class="div_all_cards"></div>
+</body>
+<script>
+    function createCarte(type, val, nom, id, color) {
+        const divCarteMain = document.createElement('div');
+        divCarteMain.className = 'div_carte_main';
+        divCarteMain.setAttribute('id', id);
+        divCarteMain.style.backgroundColor = "#"+color;
+
+        const divTitre = document.createElement('div');
+        divTitre.className = 'div_titre';
+
+        const h2Carte = document.createElement('h2');
+        h2Carte.textContent = type;
+
+        const h3Carte = document.createElement('h3');
+        h3Carte.textContent = val;
+
+        divTitre.appendChild(h2Carte);
+        divTitre.appendChild(h3Carte);
+
+        const divVilleName = document.createElement('div');
+        divVilleName.className = 'div_ville_name';
+
+        const h2Ville = document.createElement('h2');
+        h2Ville.textContent = nom;
+
+        divVilleName.appendChild(h2Ville);
+
+        divCarteMain.appendChild(divTitre);
+        divCarteMain.appendChild(divVilleName);
+
+        document.querySelector('.div_all_cards').appendChild(divCarteMain);
+    }
+    let id_partie =2;
+    let id_player = 8;
+
+    function get_info_partie() {
+        return fetch('./php/get_partie_info.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ id: id_player, id_partie: id_partie})
+        })
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(cards => {
+                    let type = cards.cargaison_type_nom;
+                    let val = cards.val;
+                    let nom = cards.ville_nom;
+                    let id = cards.id_card;
+                    let color = cards.color;
+
+                    let cartes = document.querySelectorAll('.div_carte_main');
+                    let cardExists = false;
+                    cartes.forEach((carte, index) => {
+                        if (carte.id == id) {
+                            cardExists = true;
+                        }
+                    });
+                    if (!cardExists) {
+                        createCarte(type, val, nom, id, color);
+                    }
+                });
+                const cartes = document.querySelectorAll('.div_carte_main');
+                cartes.forEach((carte, index) => {
+                    carte.style.left = `${index * 100}px`;
+                });
+            })
+            .catch(error => console.error(error));
+    }
+
+    function distributeCards() {
+        return fetch('./php/distribute_cards.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ id:id_partie })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                let list_joueurs = [];
+                let nb = data[0].nb_joueur;
+                let nb_cards = data[0].nb_cards;
+                let etat = data[0].etat;
+                if (etat == 1) {
+                    return;
+                }
+                data.forEach(joueurs =>{
+                    list_joueurs.push(joueurs.id_joueur);
+                });
+                let liste_emplacement = [];
+                fetch('./php/get_all_emplacement.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams()
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(emplacement => {
+                            let nb_ville = emplacement.nombre;
+                            let id_emplacement = emplacement.id_emplacement;
+
+                            for (let i = 0; i < nb_ville; i++) {
+                                liste_emplacement.push(id_emplacement);
+                            }
+                        });
+
+                        list_joueurs.forEach(joueur => {
+                            let liste_emplacement_selected = [];
+                            for (let i = 0; i < nb_cards; i++) {
+                                let random = Math.floor(Math.random() * liste_emplacement.length);
+                                let id_emplacement = liste_emplacement[random];
+                                liste_emplacement.splice(random, 1);
+                                liste_emplacement_selected.push(id_emplacement);
+                            }
+                            console.log(liste_emplacement_selected,joueur);
+                            liste_emplacement_selected = JSON.stringify(liste_emplacement_selected);
+                            fetch('./php/distribute_cards_to_player.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: new URLSearchParams({ id_joueur: joueur, liste_emplacement: liste_emplacement_selected })
+                            })
+                                .then(response => response.text())
+                                .then(data => {
+                                })
+                                .catch(error => console.error(error));
+                        });
+                        liste_emplacement = JSON.stringify(liste_emplacement);
+                        fetch('./php/set_partie_not_distri_cards.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: new URLSearchParams({ id_partie: id_partie, liste_emplacement: liste_emplacement })
+                            })
+                                .then(response => response.text())
+                                .then(data => {
+                                })
+                                .catch(error => console.error(error));
+
+                    })
+                    .catch(error => console.error(error));
+                    })
+            .catch(error => console.error(error));
+    }
+    
+    distributeCards();
+    get_info_partie();
+    </script>
+</html>
