@@ -16,18 +16,38 @@
                 <h2>Connexion</h2>
                 <div class="input_div">
                     <label for="code">Code de la partie</label>
-                    <input type="text" name="code" id="code" placeholder="Code">
+                    <input type="text" name="code" id="code" placeholder="Code" title="Entrez le code de 5 caractères de la partie">
                 </div>
                 <div class="input_div">
                     <label for="nom">Pseudo</label>
-                    <input type="text" name="nom" id="nom" placeholder="Pseudo">
+                    <input type="text" name="nom" id="nom" placeholder="Pseudo" title="Entrez votre pseudo">
                 </div>
                 <p id="error_txt"></p>
                 <button id="connexion" onclick="get_info_partie()">Connexion</button>
             </div>
         </div>
+        <div class="barre"></div>
         <div class="right">
+            <div class="content">
+                <h2>Creation d'une partie</h2>
+                <div class="input_div">
+                    <label for="code">Nombre de joueurs dans la partie</label>
+                    <input type="number" name="nb_joueurs" id="nb_joueurs" placeholder="Nb" title="Entrez un nombre entre 2 et 6">
+                    <script>
+                        let nb_joueurs_input = document.getElementById("nb_joueurs");
 
+                        nb_joueurs_input.addEventListener("input", function(event) {
+                            if (nb_joueurs_input.value < 2) {
+                                nb_joueurs_input.value = 2;
+                            } else if (nb_joueurs_input.value > 6) {
+                                nb_joueurs_input.value = 6;
+                            }
+                        });
+                    </script>
+                </div>
+                <p id="error_txt"></p>
+                <button id="create" onclick="create_partie()">Create</button>
+            </div>
         </div>
     </main>
     <div class="chargement_div">
@@ -171,8 +191,11 @@
                                 if (nb_joueur_conn == nb_joueurs){
                                     distributeCards();
 
-                                    setInterval(function() {
+                                    setTimeout(function() {
+                                        chargement_div.style.display = "none";
                                         window.location.href = "../map.html";
+                                        return
+
                                     }, 2000);
                                 }
                             })
