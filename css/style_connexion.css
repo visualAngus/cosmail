@@ -93,7 +93,9 @@ main {
 }
 #nom{
     font-size: 1em;
-
+}
+#nom_create{
+  font-size: 1em;
 }
 .input_div label{
     font-size: 1.2em;
@@ -123,7 +125,7 @@ main {
 .content button:active{
     background-color: #d7b15352;
 }
-#error_txt{
+#error_txt,#error_txt_2{
     position: absolute;
     z-index: 100;
     transform: translateY(55px);
@@ -182,7 +184,7 @@ main {
 
     display: none;
 }
-.div_txt{
+.div_txt,.div_code{
     font-size: 2em;
     font-weight: bold;
     color: rgb(37, 37, 37);
@@ -194,6 +196,14 @@ main {
     gap: 10px;
 }
 
+
+.div_noms{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
 /* chargement */
 
 .dot-spinner {

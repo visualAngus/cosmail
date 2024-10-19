@@ -31,6 +31,23 @@
                 <button id="reset" onclick="reset_svg()">Reset</button>
             </div>
         </div>
+
+        <div class="div_name_and_point">
+            <div class="div_info">
+                <div class="div_name">
+                    <h2 id="nom_joueur"></h2>
+                </div>
+                <div class="div_point">
+                    <h2>0</h2>
+                </div>
+            </div>
+            
+            <div class="div_nb_steep">
+                <h3>nombre de pas :</h3>
+                <h2>0</h2>
+            </div>
+        </div>
+        
         <div class="div_all_cards"></div>
     </div>
 </body>
@@ -133,23 +150,24 @@
         let adjustedX = (rotatedLeft) / scale;
         let adjustedY = (rotatedTop) / scale;
         console.log(adjustedX, adjustedY)
-        get_next_authorized_step(16).then(paths => {
+        get_next_authorized_step(2).then(paths => {
             ville = id.split('-')[0];
             ville = ville.substring(3);
             ville = ville.replace('_', '');
             if (paths.length == 0) {
-            console.log('not authorized');
-            translates_plane = [adjustedX, adjustedY];
-            document.getElementsByClassName('div_plane')[0].style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
-            document.getElementsByClassName('div_plane')[0].setAttribute('data-ville', id);
-            return;
+                console.log('not authorized');
+                // translates_plane = [adjustedX, adjustedY];
+                // document.getElementsByClassName('div_plane')[0].style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
+                // document.getElementsByClassName('div_plane')[0].setAttribute('data-ville', id);
+                return;
             }
             if (paths.includes(ville)) {
-            translates_plane = [adjustedX, adjustedY];
-            document.getElementsByClassName('div_plane')[0].style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
-            document.getElementsByClassName('div_plane')[0].setAttribute('data-ville', id);
+                translates_plane = [adjustedX, adjustedY];
+                document.getElementsByClassName('div_plane')[0].style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
+                document.getElementsByClassName('div_plane')[0].setAttribute('data-ville', id);
             } else {
-            console.log('not authorized');
+                console.log('not authorized');
+                return;
             }
         }).catch(error => {
             console.error('Error getting authorized steps:', error);

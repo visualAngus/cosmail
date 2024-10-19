@@ -76,14 +76,16 @@ function get_info_partie() {
     })
         .then(response => response.json())
         .then(data => {
-            console.log(data);
+            let info = data[0];
+            let nom = info.joueur_nom;
+            document.getElementById('nom_joueur').textContent = nom;
+
             data.forEach(cards => {
                 let type = cards.cargaison_type_nom;
                 let val = cards.val;
                 let nom = cards.ville_nom;
                 let id = cards.id_card;
                 let color = cards.color;
-
                 let cartes = document.querySelectorAll('.div_carte_main');
                 let cardExists = false;
                 cartes.forEach((carte, index) => {
@@ -94,10 +96,8 @@ function get_info_partie() {
                 if (!cardExists) {
                     createCarte(type, val, nom, id, color);
                 }
-            });
-            const cartes = document.querySelectorAll('.div_carte_main');
-            cartes.forEach((carte, index) => {
-                // carte.style.left = `${index * 100}px`;
+
+
             });
         })
         .catch(error => console.error(error));

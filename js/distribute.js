@@ -1,7 +1,8 @@
 
-let id_partie = localStorage.getItem('id_partie');
+
 
 function distributeCards() {
+    let id_partie = localStorage.getItem('id_partie');
     return fetch('../php/distribute_cards.php', {
         method: 'POST',
         headers: {

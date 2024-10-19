@@ -10,7 +10,7 @@
     // Fonction pour récupérer les informations d'une partie donnée
     $sql = "SELECT parties.nb_joueur , joueurs_actifs.id_joueur , joueurs_actifs.point , cards.id_card , cards.etat , emplacement.nom as ville_nom, 
                     emplacement.val, emplacement.id_emplacement, cargaison_type.nom as cargaison_type_nom, cargaison_type.id as cargaison_type_id ,
-                    color.color
+                    color.color, joueurs_actifs.nom as joueur_nom
             FROM joueurs_actifs 
             LEFT JOIN parties ON joueurs_actifs.id_partie_link = parties.id_partie and parties.id_partie = '$id_partie'
             LEFT JOIN cards ON joueurs_actifs.id_joueur = cards.id_joueur_link 
