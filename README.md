@@ -5,17 +5,8 @@ CosMail est un projet de jeu de société développé avec PHP et MySQL. Le jeu 
 
 ## Fonctionnalités
 
-- Envoi et réception d'emails
-- Gestion des contacts
+- Gestion de partie de jeu
 - Interface utilisateur intuitive
-- Sécurité renforcée avec SSL/TLS
-
-## Prérequis
-
-- PHP 7.4 ou supérieur
-- MySQL 5.7 ou supérieur
-- Serveur Apache (inclus avec XAMPP)
-- Composer (pour la gestion des dépendances)
 
 ## Licence
 
