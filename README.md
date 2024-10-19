@@ -1,6 +1,6 @@
 # CosMail
 
-CosMail est un projet de messagerie électronique développé avec PHP et MySQL. Ce projet vise à fournir une plateforme simple et efficace pour envoyer et recevoir des emails.
+CosMail est un projet de jeu de société développé avec PHP et MySQL.
 
 ## Fonctionnalités
 
