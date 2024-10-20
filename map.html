@@ -13,15 +13,15 @@
     <div class="div_page">
         <div class="div_carte">
             <div class="div_piont">
-                <div class="div_plane">
+                <!-- <div class="div_plane">
                     <div id="svg-plane"></div>
-                </div>
+                </div> -->
             </div>
             <div id="svg-container">
             </div>
         </div>
         <div class="div_controls">
-           
+
             <div class="div_zoom">
                 <button id="zoom_in">+</button>
                 <div class="div_zoom_out_bar">
@@ -41,26 +41,26 @@
                     <h2>0</h2>
                 </div>
             </div>
-            
+
             <div class="div_nb_steep">
                 <h3>nombre de pas :</h3>
                 <h2>0</h2>
             </div>
         </div>
-        
+
         <div class="div_all_cards"></div>
     </div>
 </body>
 <script src="js/cards.js"></script>
 <script>
 
-
+    // ouverture de la carte en svg
     fetch('./img/V1.svg')
         .then(response => response.text()) // Récupère le contenu du fichier SVG sous forme de texte
         .then(data => {
             document.getElementById('svg-container').innerHTML += data; // Injecte le SVG dans le DOM
             let layer8 = document.getElementById('Layer_8');
-
+            // mise en place des evenements sur les villes
             for (let i = 0; i < layer8.children.length; i++) {
                 let ville = layer8.children[i];
                 ville.addEventListener('mouseover', function () {
@@ -74,6 +74,8 @@
                 });
             }
             let villes_layer = document.getElementById('Layer_8');
+
+            // rotation des villes en fonction de la carte
             for (let i = 0; i < villes_layer.children.length; i++) {
                 let ville = villes_layer.children[i];
                 let position_tmp = ville.querySelector('circle');
@@ -82,59 +84,88 @@
                     let y = position_tmp.getAttribute('cy');
 
                     ville.style.transformOrigin = `${x}px ${y}px`;
-                    // ville.style.transform = `rotate(${-angle}deg)`;
+                    ville.style.transform = `rotate(${-angle}deg)`;
                     ville.style.transition = 'all 0.2s ease';
                 }
             }
 
-            fetch('./img/plane.svg')
-                .then(response => response.text()) // Récupère le contenu du fichier SVG sous forme de texte
-                .then(data => {
-                    document.getElementById('svg-plane').innerHTML = data;
-                    console.log(document.getElementsByClassName('div_plane')[0]);
-                    document.getElementsByClassName('div_plane')[0].addEventListener('mousedown', function (event) {
-                        console.log('down');
-                        plane_dragging = true;
-                        click_down_plane = [event.clientX, event.clientY];  // Enregistre la position de la souris lors du clic
-                    });
-                    document.getElementsByClassName('div_plane')[0].addEventListener('mouseup', function () {
-                        plane_dragging = false;
-                    });
+            // chargement de l'avion
+            function add_plane(id) {
+                fetch('./img/plane.svg')
+                    .then(response => response.text()) // Récupère le contenu du fichier SVG sous forme de texte
+                    .then(data => {
+                        let div_plane = document.createElement('div');
+                        div_plane.classList.add('div_plane');
+                        div_plane.id = "plane-"+id;
 
-                })
-                .catch(error => console.log(error));
+                        let svg_plane = document.createElement('div');
+                        svg_plane.classList.add('svg-plane');
+                        svg_plane.innerHTML = data;
+                        div_plane.appendChild(svg_plane);
+                        document.getElementsByClassName('div_piont')[0].appendChild(div_plane);
 
-                let id_start = localStorage.getItem('id_start');
+                        div_plane.addEventListener('mousedown', function () {
+                            id_pawn_selected = id;
+                            plane_dragging = true;
+                            click_down_plane = [event.clientX, event.clientY];
+                        });
 
-                set_starting_position(id_start);
+                        div_plane.addEventListener('click', function (event) {
+                            id_pawn_selected = id;
+                        });
+
+                        document.addEventListener('mousemove', function (event) {
+                            if (plane_dragging) {
+                                move_plane(event);
+                            }
+                        });
+
+                        let id_start = localStorage.getItem('id_start')-1;
+                        set_starting_position(id_start);
+                    })
+                    .catch(error => console.log(error));
+            }
+
+            add_plane(0);
+            add_plane(1);
+            add_plane(2);
         })
         .catch(error => console.log(error));
 
 
 
-    let click_down = [0, 0];
-    let translates = [0, 0];
-    let dragging = false;
-    let scale = 1;
-    let angle = 0;
+    
 
-    let click_down_plane = [0, 0];
-    let translates_plane = [0, 0];
-    let plane_dragging = false;
+    // set des variables
+    let click_down = [0, 0]; // Position de la souris lors du clic
+    let translates = [0, 0]; // Translation de la carte
+    let dragging = false; // Indique si l'utilisateur est en train de faire glisser la carte
+    let scale = 1; // Échelle de la carte   
+    let angle = 0; // Angle de rotation de la carte
 
+    let id_pawn_selected = 0; // Id du pion sélectionné
+    let click_down_plane = [0, 0]; // Position de la souris lors du clic sur l'avion
+    let translates_plane = [[0, 0],[0, 0],[0, 0]]; // Translation de l'avion
+    let plane_dragging = false; // Indique si l'utilisateur est en train de faire glisser l'avion
+
+    // deplacement de l'avion par le click
     function move_plane(event) {
+        // Calculer le déplacement de la souris
         let x_move = (event.clientX - click_down_plane[0]) / scale;
         let y_move = (event.clientY - click_down_plane[1]) / scale;
-
-        translates_plane[0] += x_move;
-        translates_plane[1] += y_move;
-
-        document.getElementsByClassName('div_plane')[0].style.transform = `translate(${translates_plane[0]}px, ${translates_plane[1]}px)`;
+        // Mettre à jour la variable de translation de l'avion
+        translates_plane[id_pawn_selected][0] += x_move;
+        translates_plane[id_pawn_selected][1] += y_move;
+        // Mettre à jour la position de l'avion
+        
+        // selection de l'enfant avec le bon id
+        document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).style.transform = `translate(${translates_plane[id_pawn_selected][0]}px, ${translates_plane[id_pawn_selected][1]}px)`;
 
         click_down_plane = [event.clientX, event.clientY];
     }
-
+    // deplacement de l'avion
     function deplace_plane(ville) {
+        // Obtenir la position de la ville
         let position = ville.getBoundingClientRect();
         let id = ville.getAttribute('id');
         // Obtenir les dimensions du conteneur SVG
@@ -149,26 +180,28 @@
         // Ajuster pour la translation (les valeurs en pixels)
         let adjustedX = (rotatedLeft) / scale;
         let adjustedY = (rotatedTop) / scale;
-        console.log(adjustedX, adjustedY)
+        // Vérifier si le joueur est autorisé à se déplacer vers la ville
         get_next_authorized_step(17).then(paths => {
+            // Obtenir l'id reelle de la ville
             ville = id.split('-')[0];
             ville = ville.substring(3);
             ville = ville.replace('_', '');
 
-            console.log(paths);
-
+            // si la ville n'a pas de connection
             if (paths.length == 0) {
                 console.log('not authorized');
-                // translates_plane = [adjustedX, adjustedY];
-                // document.getElementsByClassName('div_plane')[0].style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
-                // document.getElementsByClassName('div_plane')[0].setAttribute('data-ville', id);
                 return;
             }
+            // si la ville est autorisé / son id est dans les paths
             if (paths.includes(ville)) {
-                translates_plane = [adjustedX, adjustedY];
-                document.getElementsByClassName('div_plane')[0].style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
-                document.getElementsByClassName('div_plane')[0].setAttribute('data-ville', id);
-            } else {
+                console.log('authorized');
+                translates_plane[id_pawn_selected] = [adjustedX, adjustedY];
+                console.table(translates_plane);
+                document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
+                document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).setAttribute('data-ville', id);
+            }
+            // si la ville n'est pas autorisé
+            else {
                 console.log('not authorized');
                 return;
             }
@@ -176,9 +209,10 @@
             console.error('Error getting authorized steps:', error);
         });
     }
+    // Fonction pour trouver les chemins possibles
     function findPaths(positions, startPosition, maxLength) {
-
         let next_steps = [];
+        // Parcourt toutes les positions pour trouver les liens avec la position de départ
         positions.forEach(link => {
             if (link[1] == startPosition) {
                 next_steps.push(link);
@@ -188,33 +222,40 @@
             }
         });
         let paths = [];
+        // Parcourt les étapes suivantes pour trouver les chemins possibles
         next_steps.forEach(step => {
-            if (maxLength-step[3] >=0){
-                let sub_paths = findPaths(positions, step[2], maxLength-step[3]);
+            if (maxLength - step[3] >= 0) {
+                let sub_paths = findPaths(positions, step[2], maxLength - step[3]);
 
-                if (step[1] == startPosition){
+                if (step[1] == startPosition) {
                     paths.push(step[2]);
                 }
-                else{
+                else {
                     paths.push(step[1]);
                 }
             }
         });
+        // Retourne les chemins possibles
         return paths;
     }
 
+    // Fonction pour obtenir les étapes autorisées
     function get_next_authorized_step(nb_step) {
-        let plane = document.getElementsByClassName('div_plane')[0];
+        // Obtenir la position actuelle de l'avion
+        let plane =  document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`)
+        // Obtenir l'id de la ville sur laquelle se trouve l'avion
         let ville = plane.getAttribute('data-ville');
+        // Si l'avion n'est pas sur une ville
         if (ville == null) {
             return Promise.resolve([]); // Retourner une promesse résolue avec un tableau vide
         }
+        // Obtenir l'id de la ville
         ville = ville.split('-')[0];
         ville = ville.substring(3);
         ville = ville.replace('_', '');
         ville = parseInt(ville);
-        console.log(ville);
 
+        // Obtenir les chemins possibles
         return fetch('./php/get_path.php', {
             method: 'POST',
             headers: {
@@ -222,28 +263,27 @@
             },
             body: new URLSearchParams({ position: ville })
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            return findPaths(data, ville, nb_step); // Retourner le résultat après avoir trouvé les chemins
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
-            return []; // Retourner un tableau vide en cas d'erreur
-        });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                return findPaths(data, ville, nb_step); // Retourner le résultat après avoir trouvé les chemins = paths
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+                return []; // Retourner un tableau vide en cas d'erreur
+            });
     }
 
+    // Fonction pour définir la position de départ de l'avion
     function set_starting_position(id_starting_position) {
-        let plane = document.getElementsByClassName('div_plane')[0];
+        // Obtenir l'avion
+        let planes =  document.querySelector('.div_piont')
+        // Obtenir l'id svg de la ville de départ
         let start_id = '_x3' + id_starting_position.toString()[0] + '_' + id_starting_position.toString()[1];
-
-        let layer12 = document.getElementById('Layer_12');
-        console.log(layer12);
-
         let position = document.getElementById(start_id).getBoundingClientRect();
 
         const svgContainer = document.getElementById('svg-container');
@@ -258,10 +298,37 @@
         let adjustedX = (rotatedLeft) / scale;
         let adjustedY = (rotatedTop) / scale;
 
-        translates_plane = [adjustedX, adjustedY];
-        document.getElementsByClassName('div_plane')[0].style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
-        document.getElementsByClassName('div_plane')[0].setAttribute('data-ville', start_id);
-        
+
+        for (let i = 0; i < planes.children.length; i++) {
+            let plane = planes.children[i];
+            let id = plane.getAttribute('id');
+             // Mettre à jour la position de l'avion
+            if (id == 'plane-'+id_pawn_selected) {
+                translates_plane[i] = [adjustedX, adjustedY];
+                plane.style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
+                plane.setAttribute('data-ville', start_id);
+            }else{
+                translates_plane[i] = [adjustedX, adjustedY];
+                plane.style.transform = `translate(${adjustedX}px, ${adjustedY+20}px)`;
+                plane.setAttribute('data-ville', start_id);
+            }
+            
+        }
+
+        // griser les point de depart non autorisé
+
+        let layer12 = document.getElementById('Layer_12');
+
+        for (let i = 0; i < layer12.children.length; i++) {
+            let ville = layer12.children[i];
+            let id = ville.getAttribute('id');
+            if (id != start_id) {
+                //rajout d'une class grisée
+                ville.classList.add('grise');
+            }
+        }
+
+
     }
 
     function city_hover(city, etat) {
@@ -271,41 +338,10 @@
             return;
         }
         else if (etat == 1) {
-            city.style.transform = 'scale(1.1)' ;
+            city.style.transform = 'scale(1.1)';
             city.style.filter = 'drop-shadow(0px 5px 10px rgba(0, 0, 0, 0.35))';
         }
     }
-
-    // function rotated(an, event) {
-    //     angle += an;
-    //     let svg_parent = document.getElementById('svg-container');
-    //     svg_parent.style.transform = `rotate(${angle}deg)`;
-
-    //     let villes_layer = document.getElementById('Layer_8');
-    //     for (let i = 0; i < villes_layer.children.length; i++) {
-    //         let ville = villes_layer.children[i];
-    //         let position_tmp = ville.querySelector('circle');
-    //         if (position_tmp) {
-    //             let x = position_tmp.getAttribute('cx');
-    //             let y = position_tmp.getAttribute('cy');
-
-    //             ville.style.transformOrigin = `${x}px ${y}px`;
-    //             ville.style.transform = `rotate(${-angle}deg)`;
-    //         }
-    //     }
-    //     let player_places = document.getElementById('Layer_12');
-    //     for (let i = 0; i < player_places.children.length; i++) {
-    //         let place = player_places.children[i];
-    //         let position_tmp = place.querySelector('circle');
-    //         if (position_tmp) {
-    //             let x = position_tmp.getAttribute('cx');
-    //             let y = position_tmp.getAttribute('cy');
-
-    //             place.style.transformOrigin = `${x}px ${y}px`;
-    //             place.style.transform = `rotate(${-angle}deg)`;
-    //         }
-    //     }
-    // }
 
     function mouve_svg(event) {
         if (!dragging) {
@@ -345,6 +381,11 @@
     }
 
 
+    document.addEventListener('mouseup', function (event) {
+        dragging = false;
+        plane_dragging = false;
+    });
+
     document.addEventListener('wheel', function (event) {
         event.preventDefault();
         let zoom = zoom_svg(event);
@@ -354,17 +395,14 @@
         svg_parent.style.transform = `${move} scale(${scale})`;
         let zoom_bar = document.getElementsByClassName('div_zoom_in_bar')[0];
         zoom_bar.style.height = `${100 / 3 * scale}%`;
-    });
+    }, { passive: false });
 
     document.addEventListener('mousemove', function (event) {
         let svg_parent = document.getElementsByClassName('div_carte')[0];
         svg_parent.style.transform = mouve_svg(event) + ` scale(${scale})`;
-        if (plane_dragging) {
-            move_plane(event)
-        }
     });
 
-    
+
 
     document.addEventListener('mousedown', function (event) {
         if (event.button !== 1) {
@@ -377,7 +415,6 @@
 
     document.addEventListener('mouseup', function () {
         document.body.style.cursor = '';
-
         dragging = false;
         dragging_plane = false;
     });
@@ -405,7 +442,7 @@
         zoom_bar.style.height = `${100 / 3 * scale}%`;
     });
 
-    
+
 </script>
 
 </html>

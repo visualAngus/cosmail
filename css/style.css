@@ -48,7 +48,7 @@ svg {
     justify-content: center;
     align-items: center;
     transform: scale(1);
-    transition: transform 0.1s ease;
+    transition: transform 0.1s ease, transform 0.5s ease;
 }
 #svg-container{
     width: 100%;
@@ -232,7 +232,7 @@ svg {
     width: 35px;
     filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.5));
 
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     transform-origin: 50% 50%;
 
 }

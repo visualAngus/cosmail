@@ -21,7 +21,11 @@ body {
     justify-content: flex-end;
     align-items: flex-end;
 
+    user-select: none;
     padding: 10px;
+
+    /* Make the div completely transparent to clicks and mouse events */
+    pointer-events: none;
 }
 
 .div_carte_main {
@@ -79,4 +83,9 @@ body {
 }
 .div_carte_main:hover + .div_carte_main {
     box-shadow: rgba(0, 0, 0, 0.24) -25px 2px 5px;
+}
+
+.grise {
+    filter: grayscale(30%);
+    transition: all 0.3s ease;
 }
