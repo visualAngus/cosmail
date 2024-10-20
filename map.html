@@ -122,7 +122,6 @@
                                 move_plane(event);
                             }
                         });
-
                         set_starting_position(id_emplacement_link, id);
                     })
                     .catch(error => console.log(error));
@@ -192,22 +191,59 @@
         click_down_plane = [event.clientX, event.clientY];
     }
     // deplacement de l'avion
-    function deplace_plane(ville) {
-        // Obtenir la position de la ville
+
+    function move_to(id_pawn,id_ville,adjustedX, adjustedY){
+
+
+
+        translates_plane[id_pawn] = [adjustedX, adjustedY];
+        console.table(translates_plane);
+        document.querySelector('.div_piont').querySelector(`#plane-${id_pawn}`).style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
+        document.querySelector('.div_piont').querySelector(`#plane-${id_pawn}`).setAttribute('data-ville', id_ville);
+
+        let id_pawn_data = document.querySelector('.div_piont').querySelector(`#plane-${id_pawn}`).getAttribute('id_pawn');
+
+        // fetch('./php/update_pawn_position.php', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/x-www-form-urlencoded'
+        //     },
+        //     body: new URLSearchParams({ id_player: id_player, id_pawn: id_pawn_data, id_emplacement: id_ville })
+        // })
+        //     .then(response => {
+        //         if (!response.ok) {
+        //             throw new Error('Network response was not ok');
+        //         }
+        //         return response.text();
+        //     })
+        //     .then(data => {
+        //         console.log(data);
+        //     })
+        //     .catch(error => {
+        //         console.error('There was a problem with the fetch operation:', error);
+        //     });
+
+    }
+    
+    function get_ville_position(ville){
         let position = ville.getBoundingClientRect();
-        let id = ville.getAttribute('id');
-        // Obtenir les dimensions du conteneur SVG
         const svgContainer = document.getElementById('svg-container');
         const svgRect = svgContainer.getBoundingClientRect();
-        // Obtenir la position de la ville par rapport au conteneur SVG
         let cityLeft = position.left - svgRect.left;
         let cityTop = position.top - svgRect.top - 15;
-        // Appliquer la rotation
         let rotatedLeft = cityLeft * Math.cos(angle * Math.PI / 180) - cityTop * Math.sin(angle * Math.PI / 180);
         let rotatedTop = cityLeft * Math.sin(angle * Math.PI / 180) + cityTop * Math.cos(angle * Math.PI / 180);
-        // Ajuster pour la translation (les valeurs en pixels)
         let adjustedX = (rotatedLeft) / scale;
         let adjustedY = (rotatedTop) / scale;
+
+        return [adjustedX, adjustedY];
+    }
+
+    function deplace_plane(ville) {
+        // Obtenir la position de la ville
+        
+        let adjustedX, adjustedY = get_ville_position(ville); 
+        
         // Vérifier si le joueur est autorisé à se déplacer vers la ville
         get_next_authorized_step(17).then(paths => {
             // Obtenir l'id reelle de la ville
@@ -223,33 +259,7 @@
             // si la ville est autorisé / son id est dans les paths
             if (paths.includes(ville)) {
                 console.log('authorized');
-                translates_plane[id_pawn_selected] = [adjustedX, adjustedY];
-                console.table(translates_plane);
-                document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
-                document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).setAttribute('data-ville', id);
-
-                let id_pawn = document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).getAttribute('id_pawn');
-
-                fetch('./php/update_pawn_position.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: new URLSearchParams({ id_player: id_player, id_pawn: id_pawn, id_emplacement: ville })
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.text();
-                    })
-                    .then(data => {
-                        console.log(data);
-                    })
-                    .catch(error => {
-                        console.error('There was a problem with the fetch operation:', error);
-                    });
-
+                move_to(id_pawn_selected,ville,adjustedX, adjustedY);
             }
             // si la ville n'est pas autorisé
             else {
@@ -332,43 +342,31 @@
     // Fonction pour définir la position de départ de l'avion
     function set_starting_position(id_starting_position, pawn_id) {
 
-        let start_id = id_starting_position;
-        let id = pawn_id;
+        let start_id = String(id_starting_position);
+        console.log(start_id);
+        start_id = "_x3"+start_id[0]+"_"+start_id[1];
 
-        // exemple 34 -> _x33_4
-        start_id = start_id.toString();
-        start_id = start_id.split('');
-        start_id.splice(start_id.length - 1, 0, '_');
-        start_id.splice(0, 0, '_');
-        start_id = start_id.join('');
-        start_id = start_id.replace('_', '_x3');
-
-        // obtenir la position de la ville de départ
-        let ville = document.getElementById(start_id);
-        let position = ville.getBoundingClientRect();
-
-        const svgContainer = document.getElementById('svg-container');
-        const svgRect = svgContainer.getBoundingClientRect();
-        // Obtenir la position de la ville par rapport au conteneur SVG
-        let cityLeft = position.left - svgRect.left;
-        let cityTop = position.top - svgRect.top - 15;
-        // Appliquer la rotation
-        let rotatedLeft = cityLeft * Math.cos(angle * Math.PI / 180) - cityTop * Math.sin(angle * Math.PI / 180);
-        let rotatedTop = cityLeft * Math.sin(angle * Math.PI / 180) + cityTop * Math.cos(angle * Math.PI / 180);
-        // Ajuster pour la translation (les valeurs en pixels)
-        let adjustedX = (rotatedLeft) / scale;
-        let adjustedY = (rotatedTop) / scale;
-
-        
-        translates_plane[id_pawn_selected] = [adjustedX, adjustedY];
-        console.table(translates_plane);
-        document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
-        document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).setAttribute('data-ville', id);
-
-
-        // griser les point de depart non autorisé
 
         let layer12 = document.getElementById('Layer_12');
+        let ville = layer12.querySelector(`#${start_id}`);
+
+        if (ville == null) {
+            let layer8 = document.getElementById('Layer_8');
+            start_id = start_id+"-2"
+            ville = layer8.querySelector(`#${start_id}`);
+        }
+
+        let adjustedX;
+        let adjustedY;
+
+        let postions = get_ville_position(ville); 
+
+        adjustedX = postions[0];
+        adjustedY = postions[1];
+
+        move_to(pawn_id,start_id,adjustedX, adjustedY);
+        
+
 
         for (let i = 0; i < layer12.children.length; i++) {
             let ville = layer12.children[i];
