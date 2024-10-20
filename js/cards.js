@@ -58,7 +58,7 @@ function createCarte(type, val, nom, id, color) {
     divCarteMain.appendChild(divVilleName);
 
     document.querySelector('.div_all_cards').appendChild(divCarteMain);
-    document.querySelector('.div_all_cards').style.width = `${document.querySelectorAll('.div_carte_main').length * 150}px`;
+    // document.querySelector('.div_all_cards').style.width = `${document.querySelectorAll('.div_carte_main').length * 150}px`;
 }
 let id_partie = localStorage.getItem('id_partie');
 let id_player = localStorage.getItem('id_player');

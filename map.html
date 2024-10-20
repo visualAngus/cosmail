@@ -145,7 +145,6 @@
                 .then(data => {
                     for (let i = 0; i < data.length; i++) {
                         let player = data[i];
-                        console.log(player);
                         document.getElementById('nom_joueur').innerText = player['name'];
                         document.getElementsByClassName('div_point')[0].children[0].innerText = player['point'];
                         document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = player['nb_step'];
@@ -174,7 +173,7 @@
     let click_down_plane = [0, 0]; // Position de la souris lors du clic sur l'avion
     let translates_plane = [[0, 0], [0, 0], [0, 0]]; // Translation de l'avion
     let plane_dragging = false; // Indique si l'utilisateur est en train de faire glisser l'avion
-
+        
     // deplacement de l'avion par le click
     function move_plane(event) {
         // Calculer le déplacement de la souris
@@ -192,36 +191,34 @@
     }
     // deplacement de l'avion
 
-    function move_to(id_pawn,id_ville,adjustedX, adjustedY){
+    function move_to(id_pawn,id_ville,adjustedX, adjustedY,id_emplacement) {
 
-
+        console.log(id_pawn,id_ville,adjustedX, adjustedY,id_emplacement);
 
         translates_plane[id_pawn] = [adjustedX, adjustedY];
-        console.table(translates_plane);
         document.querySelector('.div_piont').querySelector(`#plane-${id_pawn}`).style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
         document.querySelector('.div_piont').querySelector(`#plane-${id_pawn}`).setAttribute('data-ville', id_ville);
 
         let id_pawn_data = document.querySelector('.div_piont').querySelector(`#plane-${id_pawn}`).getAttribute('id_pawn');
 
-        // fetch('./php/update_pawn_position.php', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/x-www-form-urlencoded'
-        //     },
-        //     body: new URLSearchParams({ id_player: id_player, id_pawn: id_pawn_data, id_emplacement: id_ville })
-        // })
-        //     .then(response => {
-        //         if (!response.ok) {
-        //             throw new Error('Network response was not ok');
-        //         }
-        //         return response.text();
-        //     })
-        //     .then(data => {
-        //         console.log(data);
-        //     })
-        //     .catch(error => {
-        //         console.error('There was a problem with the fetch operation:', error);
-        //     });
+        fetch('./php/update_pawn_position.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ id_player: id_player, id_pawn: id_pawn_data, id_emplacement: id_emplacement })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
 
     }
     
@@ -241,12 +238,15 @@
 
     function deplace_plane(ville) {
         // Obtenir la position de la ville
-        
-        let adjustedX, adjustedY = get_ville_position(ville); 
+        let param = get_ville_position(ville);
+
+        let adjustedX = param[0];
+        let adjustedY = param[1];
         
         // Vérifier si le joueur est autorisé à se déplacer vers la ville
         get_next_authorized_step(17).then(paths => {
             // Obtenir l'id reelle de la ville
+            let id = ville.id;
             ville = id.split('-')[0];
             ville = ville.substring(3);
             ville = ville.replace('_', '');
@@ -254,16 +254,20 @@
             // si la ville n'a pas de connection
             if (paths.length == 0) {
                 console.log('not authorized');
+                console.log(ville);
+                console.log(paths);
                 return;
             }
             // si la ville est autorisé / son id est dans les paths
             if (paths.includes(ville)) {
                 console.log('authorized');
-                move_to(id_pawn_selected,ville,adjustedX, adjustedY);
+                move_to(id_pawn_selected,ville,adjustedX, adjustedY,ville);
             }
             // si la ville n'est pas autorisé
             else {
                 console.log('not authorized');
+                console.log(ville);
+                console.log(paths);
                 return;
             }
         }).catch(error => {
@@ -311,11 +315,18 @@
             return Promise.resolve([]); // Retourner une promesse résolue avec un tableau vide
         }
         // Obtenir l'id de la ville
-        ville = ville.split('-')[0];
-        ville = ville.substring(3);
-        ville = ville.replace('_', '');
-        ville = parseInt(ville);
 
+        // verifier si l'id est sous forme de string ou de nombre
+        console.log(ville);
+        ville_tmp = parseInt(ville);
+        if (isNaN(ville_tmp)) {
+            ville = ville.split('-')[0];
+            ville = ville.substring(3);
+            ville = ville.replace('_', '');
+            ville = parseInt(ville);
+        }else{
+            ville = ville_tmp;
+        }
         // Obtenir les chemins possibles
         return fetch('./php/get_path.php', {
             method: 'POST',
@@ -343,7 +354,6 @@
     function set_starting_position(id_starting_position, pawn_id) {
 
         let start_id = String(id_starting_position);
-        console.log(start_id);
         start_id = "_x3"+start_id[0]+"_"+start_id[1];
 
 
@@ -364,7 +374,7 @@
         adjustedX = postions[0];
         adjustedY = postions[1];
 
-        move_to(pawn_id,start_id,adjustedX, adjustedY);
+        move_to(pawn_id,start_id,adjustedX, adjustedY,id_starting_position);
         
 
 
@@ -406,11 +416,11 @@
 
     function zoom_svg(event) {
         event.preventDefault();  // Empêche le défilement par défaut
-        let zoom = event.deltaY * -0.001;  // Modifie la sensibilité
+        let zoom = event.deltaY * -0.0005;  // Modifie la sensibilité
         scale += zoom * scale;
 
-        if (scale > 3) {
-            scale = 3;
+        if (scale > 6) {
+            scale = 6;
         }
         if (scale < 0.5) {
             scale = 0.5;
@@ -441,13 +451,18 @@
         scale = zoom;
         let move = mouve_svg(event);
         let svg_parent = document.getElementsByClassName('div_carte')[0];
+        svg_parent.style.transition = 'transform 0.5s ease';
         svg_parent.style.transform = `${move} scale(${scale})`;
         let zoom_bar = document.getElementsByClassName('div_zoom_in_bar')[0];
-        zoom_bar.style.height = `${100 / 3 * scale}%`;
+        zoom_bar.style.height = `${100 / 6 * scale}%`;
+
+
+
     }, { passive: false });
 
     document.addEventListener('mousemove', function (event) {
         let svg_parent = document.getElementsByClassName('div_carte')[0];
+        svg_parent.style.transition = 'transform 0.1s ease';
         svg_parent.style.transform = mouve_svg(event) + ` scale(${scale})`;
     });
 
@@ -471,13 +486,13 @@
     // bnt zoom
     document.getElementById('zoom_in').addEventListener('click', function () {
         scale += 0.1 * scale;
-        if (scale > 3) {
-            scale = 3;
+        if (scale > 6) {
+            scale = 6;
         }
         let svg_parent = document.getElementsByClassName('div_carte')[0];
         svg_parent.style.transform = `translate(${translates[0]}px, ${translates[1]}px) scale(${scale})`;
         let zoom_bar = document.getElementsByClassName('div_zoom_in_bar')[0];
-        zoom_bar.style.height = `${100 / 3 * scale}%`;
+        zoom_bar.style.height = `${100 / 6 * scale}%`;
     });
 
     document.getElementById('zoom_out').addEventListener('click', function () {

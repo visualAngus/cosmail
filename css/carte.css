@@ -25,7 +25,7 @@ body {
     padding: 10px;
 
     /* Make the div completely transparent to clicks and mouse events */
-    pointer-events: none;
+    /* pointer-events: none; */
 }
 
 .div_carte_main {

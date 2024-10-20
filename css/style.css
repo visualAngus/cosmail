@@ -48,7 +48,7 @@ svg {
     justify-content: center;
     align-items: center;
     transform: scale(1);
-    transition: transform 0.1s ease, transform 0.5s ease;
+    transition: transform 1s ease;
 }
 #svg-container{
     width: 100%;
