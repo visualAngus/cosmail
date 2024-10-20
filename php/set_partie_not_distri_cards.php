@@ -8,8 +8,7 @@
         die("Connection failed: " . mysqli_connect_error());
     }
 
-    // Use prepared statements to prevent SQL injection
-    $stmt = $conn->prepare("INSERT INTO joueurs_actifs (id_partie_link, point,type) VALUES (?, ?, 1)");
+    $stmt = $conn->prepare("INSERT INTO joueurs_actifs (id_partie_link, point,type,nom) VALUES (?, ?, 1, 'Dealer')");
     $point = 0;
     $stmt->bind_param("ii", $id_partie, $point);
     $result = $stmt->execute();

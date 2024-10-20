@@ -34,11 +34,8 @@
     $sql = "INSERT INTO joueurs_actifs (id_partie_link, point, type, nom) VALUES (?, 0, 0, ?)";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, "ss", $id_partie_link, $nom);
-
-    // Assuming $id_partie_link and $nom are defined somewhere in your code
-
     mysqli_stmt_execute($stmt);
-
+    
 
     $sql = "SELECT id_joueur FROM joueurs_actifs WHERE id_partie_link = ? AND nom = ?";
     $stmt = mysqli_prepare($conn, $sql);
@@ -62,6 +59,15 @@
     mysqli_stmt_bind_param($stmt, "s", $id_partie_link);
 
     $result2 = mysqli_stmt_execute($stmt);
+
+    $tmp = $nb_joueur_conn + 1;
+    $sql = "UPDATE joueurs_actifs set numero_joueur = ? WHERE id_joueur = ?";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "ss", $tmp, $id_joueur);
+
+    $result3 = mysqli_stmt_execute($stmt);
+
+
 
     if ($result2) {
         echo json_encode([

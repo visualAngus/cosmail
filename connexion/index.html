@@ -161,7 +161,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
+                // console.log(data);
 
                 if (data["error"]){
                     error_txt.textContent = "Partie complète";
@@ -194,7 +194,7 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        console.log(data);
+                        // console.log(data);
                         let nb_joueur_conn = data["nb_joueur_conn"];
                         let etat = data["etat"];
                         let txt = "En attente des autres joueurs " + nb_joueur_conn + "/" + nb_joueurs;
@@ -296,7 +296,7 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        console.log(data);
+                        // console.log(data);
 
                         if (data["error"]){
                             error_txt.textContent = "Partie complète";
@@ -306,7 +306,7 @@
                         let nb_joueurs = data["nb_joueur"];
                         let nb_joueur_conn = data["nb_joueur_conn"];
                         let id_player = data["id_joueur"];
-                        console.log(id_player);
+                        // console.log(id_player);
                         
                         localStorage.setItem('id_partie', id);
                         localStorage.setItem('id_player', id_player);
