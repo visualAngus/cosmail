@@ -90,13 +90,16 @@
             }
 
             // chargement de l'avion
-            function add_plane(id) {
+            function add_plane(id, id_pawn, etat, type_pawn_name, id_emplacement_link) {
                 fetch('./img/plane.svg')
                     .then(response => response.text()) // Récupère le contenu du fichier SVG sous forme de texte
                     .then(data => {
                         let div_plane = document.createElement('div');
                         div_plane.classList.add('div_plane');
-                        div_plane.id = "plane-"+id;
+                        div_plane.id = "plane-" + id;
+                        div_plane.setAttribute('id_pawn', id_pawn);
+                        div_plane.setAttribute('etat', etat);
+                        div_plane.setAttribute('type_pawn_name', type_pawn_name);
 
                         let svg_plane = document.createElement('div');
                         svg_plane.classList.add('svg-plane');
@@ -120,21 +123,46 @@
                             }
                         });
 
-                        let id_start = localStorage.getItem('id_start')-1;
-                        set_starting_position(id_start);
+                        set_starting_position(id_emplacement_link, id);
                     })
                     .catch(error => console.log(error));
             }
 
-            add_plane(0);
-            add_plane(1);
-            add_plane(2);
+
+
+            fetch('./php/get_player_info.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({ id_player: id_player})
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    for (let i = 0; i < data.length; i++) {
+                        let player = data[i];
+                        console.log(player);
+                        document.getElementById('nom_joueur').innerText = player['name'];
+                        document.getElementsByClassName('div_point')[0].children[0].innerText = player['point'];
+                        document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = player['nb_step'];
+
+                        add_plane(i, player['id_pawn'], player['etat'],player['type_pawn_name'],player['id_emplacement_link']);
+                    }
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                });
         })
         .catch(error => console.log(error));
 
 
 
-    
+
 
     // set des variables
     let click_down = [0, 0]; // Position de la souris lors du clic
@@ -145,7 +173,7 @@
 
     let id_pawn_selected = 0; // Id du pion sélectionné
     let click_down_plane = [0, 0]; // Position de la souris lors du clic sur l'avion
-    let translates_plane = [[0, 0],[0, 0],[0, 0]]; // Translation de l'avion
+    let translates_plane = [[0, 0], [0, 0], [0, 0]]; // Translation de l'avion
     let plane_dragging = false; // Indique si l'utilisateur est en train de faire glisser l'avion
 
     // deplacement de l'avion par le click
@@ -157,7 +185,7 @@
         translates_plane[id_pawn_selected][0] += x_move;
         translates_plane[id_pawn_selected][1] += y_move;
         // Mettre à jour la position de l'avion
-        
+
         // selection de l'enfant avec le bon id
         document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).style.transform = `translate(${translates_plane[id_pawn_selected][0]}px, ${translates_plane[id_pawn_selected][1]}px)`;
 
@@ -199,6 +227,29 @@
                 console.table(translates_plane);
                 document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
                 document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).setAttribute('data-ville', id);
+
+                let id_pawn = document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).getAttribute('id_pawn');
+
+                fetch('./php/update_pawn_position.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({ id_player: id_player, id_pawn: id_pawn, id_emplacement: ville })
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        console.error('There was a problem with the fetch operation:', error);
+                    });
+
             }
             // si la ville n'est pas autorisé
             else {
@@ -242,7 +293,7 @@
     // Fonction pour obtenir les étapes autorisées
     function get_next_authorized_step(nb_step) {
         // Obtenir la position actuelle de l'avion
-        let plane =  document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`)
+        let plane = document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`)
         // Obtenir l'id de la ville sur laquelle se trouve l'avion
         let ville = plane.getAttribute('data-ville');
         // Si l'avion n'est pas sur une ville
@@ -279,12 +330,22 @@
     }
 
     // Fonction pour définir la position de départ de l'avion
-    function set_starting_position(id_starting_position) {
-        // Obtenir l'avion
-        let planes =  document.querySelector('.div_piont')
-        // Obtenir l'id svg de la ville de départ
-        let start_id = '_x3' + id_starting_position.toString()[0] + '_' + id_starting_position.toString()[1];
-        let position = document.getElementById(start_id).getBoundingClientRect();
+    function set_starting_position(id_starting_position, pawn_id) {
+
+        let start_id = id_starting_position;
+        let id = pawn_id;
+
+        // exemple 34 -> _x33_4
+        start_id = start_id.toString();
+        start_id = start_id.split('');
+        start_id.splice(start_id.length - 1, 0, '_');
+        start_id.splice(0, 0, '_');
+        start_id = start_id.join('');
+        start_id = start_id.replace('_', '_x3');
+
+        // obtenir la position de la ville de départ
+        let ville = document.getElementById(start_id);
+        let position = ville.getBoundingClientRect();
 
         const svgContainer = document.getElementById('svg-container');
         const svgRect = svgContainer.getBoundingClientRect();
@@ -298,22 +359,12 @@
         let adjustedX = (rotatedLeft) / scale;
         let adjustedY = (rotatedTop) / scale;
 
+        
+        translates_plane[id_pawn_selected] = [adjustedX, adjustedY];
+        console.table(translates_plane);
+        document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
+        document.querySelector('.div_piont').querySelector(`#plane-${id_pawn_selected}`).setAttribute('data-ville', id);
 
-        for (let i = 0; i < planes.children.length; i++) {
-            let plane = planes.children[i];
-            let id = plane.getAttribute('id');
-             // Mettre à jour la position de l'avion
-            if (id == 'plane-'+id_pawn_selected) {
-                translates_plane[i] = [adjustedX, adjustedY];
-                plane.style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
-                plane.setAttribute('data-ville', start_id);
-            }else{
-                translates_plane[i] = [adjustedX, adjustedY];
-                plane.style.transform = `translate(${adjustedX}px, ${adjustedY+20}px)`;
-                plane.setAttribute('data-ville', start_id);
-            }
-            
-        }
 
         // griser les point de depart non autorisé
 

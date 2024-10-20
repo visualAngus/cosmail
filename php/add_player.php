@@ -67,6 +67,40 @@
 
     $result3 = mysqli_stmt_execute($stmt);
 
+    // 76 -> id_emplacement de la première base de départ
+    $emplacement_id = $tmp + 76;
+
+        // Préparer la requête
+    $sql = "INSERT INTO pawns (id_joueur_link, id_emplacement_link, link_type_pawn) VALUES (?, ?, ?)";
+    $stmt = mysqli_prepare($conn, $sql);
+
+    // Exécuter la première requête avec link_type_pawn = 0
+    $link_type_pawn = 0;
+    mysqli_stmt_bind_param($stmt, "ssi", $id_joueur, $emplacement_id, $link_type_pawn);
+    mysqli_stmt_execute($stmt);
+
+    // Exécuter la deuxième requête avec link_type_pawn = 0
+    mysqli_stmt_bind_param($stmt, "ssi", $id_joueur, $emplacement_id, $link_type_pawn);
+    mysqli_stmt_execute($stmt);
+
+    // Exécuter la troisième requête avec link_type_pawn = 1
+    $link_type_pawn = 1;
+    mysqli_stmt_bind_param($stmt, "ssi", $id_joueur, $emplacement_id, $link_type_pawn);
+    mysqli_stmt_execute($stmt);
+
+    // recuperer les id des pions
+    $sql = "SELECT id_pawn FROM pawns WHERE id_joueur_link = ?";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $id_joueur);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $id_pawn = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $id_pawn[] = $row['id_pawn'];
+    }
+
+
 
 
     if ($result2) {
@@ -74,7 +108,8 @@
             "success" => "Player added and player count updated",
             "nb_joueur_conn" => $nb_joueur_conn + 1,
             "nb_joueur" => $nb_joueur,
-            "id_joueur" => $id_joueur
+            "id_joueur" => $id_joueur,
+            "id_pawn" => $id_pawn
         ]);
     } else {
         echo json_encode(["error" => "Failed to update player count"]);
