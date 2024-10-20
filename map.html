@@ -90,7 +90,7 @@
             }
 
             // chargement de l'avion
-            function add_plane(id, id_pawn, etat, type_pawn_name, id_emplacement_link) {
+            function add_plane(id, id_pawn, etat, type_pawn_name, id_emplacement_link,opponent) {
                 fetch('./img/plane.svg')
                     .then(response => response.text()) // Récupère le contenu du fichier SVG sous forme de texte
                     .then(data => {
@@ -101,27 +101,33 @@
                         div_plane.setAttribute('etat', etat);
                         div_plane.setAttribute('type_pawn_name', type_pawn_name);
 
+                       
+
                         let svg_plane = document.createElement('div');
                         svg_plane.classList.add('svg-plane');
                         svg_plane.innerHTML = data;
                         div_plane.appendChild(svg_plane);
                         document.getElementsByClassName('div_piont')[0].appendChild(div_plane);
 
-                        div_plane.addEventListener('mousedown', function () {
-                            id_pawn_selected = id;
-                            plane_dragging = true;
-                            click_down_plane = [event.clientX, event.clientY];
-                        });
+                        if(opponent == 1){
+                            div_plane.classList.add('opponent');
+                        }else{
+                            div_plane.addEventListener('mousedown', function () {
+                                id_pawn_selected = id;
+                                plane_dragging = true;
+                                click_down_plane = [event.clientX, event.clientY];
+                            });
 
-                        div_plane.addEventListener('click', function (event) {
-                            id_pawn_selected = id;
-                        });
+                            div_plane.addEventListener('click', function (event) {
+                                id_pawn_selected = id;
+                            });
 
-                        document.addEventListener('mousemove', function (event) {
-                            if (plane_dragging) {
-                                move_plane(event);
-                            }
-                        });
+                            document.addEventListener('mousemove', function (event) {
+                                if (plane_dragging) {
+                                    move_plane(event);
+                                }
+                            });
+                        }
                         set_starting_position(id_emplacement_link, id);
                     })
                     .catch(error => console.log(error));
@@ -134,7 +140,7 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: new URLSearchParams({ id_player: id_player})
+                body: new URLSearchParams({ id_player: id_player, id_partie: id_partie })
             })
                 .then(response => {
                     if (!response.ok) {
@@ -143,14 +149,21 @@
                     return response.json();
                 })
                 .then(data => {
-                    for (let i = 0; i < data.length; i++) {
-                        let player = data[i];
-                        console.log(player);
+                    let player_data = data.player;
+                    for (let i = 0; i < player_data.length; i++) {
+                        let player = player_data[i];
                         document.getElementById('nom_joueur').innerText = player['nom'];
                         document.getElementsByClassName('div_point')[0].children[0].innerText = player['point'];
                         document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = player['steep'];
 
-                        add_plane(i, player['id_pawn'], player['etat'],player['type_pawn_name'],player['id_emplacement_link']);
+                        add_plane(i, player['id_pawn'], player['etat'],player['type_pawn_name'],player['id_emplacement_link'],0);
+                    }
+
+                    let opponent_data = data.opponent;
+                    console.log(opponent_data);
+                    for (let j = 0; j < opponent_data.length; j++) {
+                        let opponent = opponent_data[j];
+                        add_plane(j + player_data.length, opponent['id_pawn'], opponent['etat'],opponent['type_pawn_name'],opponent['id_emplacement_link'],1);
                     }
                 })
                 .catch(error => {
@@ -174,7 +187,6 @@
     let click_down_plane = [0, 0]; // Position de la souris lors du clic sur l'avion
     let translates_plane = [[0, 0], [0, 0], [0, 0]]; // Translation de l'avion
     let plane_dragging = false; // Indique si l'utilisateur est en train de faire glisser l'avion
-        
     // deplacement de l'avion par le click
     function move_plane(event) {
         // Calculer le déplacement de la souris
@@ -208,6 +220,37 @@
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({ id_player: id_player, id_pawn: id_pawn_data, id_emplacement: id_emplacement })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                console.log(data);
+
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+
+    }
+    function move_to_update(id_pawn,id_ville,adjustedX, adjustedY,id_emplacement,reel_id_pawn) {
+
+
+        translates_plane[id_pawn] = [adjustedX, adjustedY];
+        let plane = document.querySelector(`.div_piont [id_pawn="${reel_id_pawn}"]`);
+        plane.style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
+        plane.setAttribute('data-ville', id_ville);
+
+
+        fetch('./php/update_pawn_position_back.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ id_player: id_player, id_pawn: reel_id_pawn, id_emplacement: id_emplacement })
         })
             .then(response => {
                 if (!response.ok) {
@@ -431,7 +474,6 @@
         return scale;
     }
 
-
     function reset_svg() {
         translates = [0, 0];
         scale = 1;
@@ -441,7 +483,6 @@
         let zoom_bar = document.getElementsByClassName('div_zoom_in_bar')[0];
         zoom_bar.style.height = '';
     }
-
 
     document.addEventListener('mouseup', function (event) {
         dragging = false;
@@ -468,8 +509,6 @@
         svg_parent.style.transition = 'transform 0.1s ease';
         svg_parent.style.transform = mouve_svg(event) + ` scale(${scale})`;
     });
-
-
 
     document.addEventListener('mousedown', function (event) {
         if (event.button !== 1) {
@@ -508,15 +547,48 @@
         let zoom_bar = document.getElementsByClassName('div_zoom_in_bar')[0];
         zoom_bar.style.height = `${100 / 3 * scale}%`;
     });
-
-
-
-
+    
     // boucle d'update des pions toutes les 5 secondes
-
     setInterval(function () {
-        
-    }, 5000);
+        fetch('./php/get_update.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ id_partie: id_partie})
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.table(data);
+                for (let i = 0; i < data.length; i++) {
+                    let ville = data[i]['id_emplacement_link'];
+                    let ville_id = String(ville);
+                    ville_id = "_x3"+ville_id[0]+"_"+ville_id[1];
+
+                    let layer12 = document.getElementById('Layer_12');
+                    let ville_ = layer12.querySelector(`#${ville_id}`);
+
+                    if (ville_ == null) {
+                        let layer8 = document.getElementById('Layer_8');
+                        ville_id = ville_id+"-2"
+                        ville_ = layer8.querySelector(`#${ville_id}`);
+                    }
+
+                    let postions = get_ville_position(ville_);
+                    let adjustedX = postions[0];
+                    let adjustedY = postions[1];
+                    move_to_update(i,ville,adjustedX, adjustedY,ville,data[i]['id_pawn']);
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    }, 1000);
 
 
 </script>
