@@ -104,9 +104,9 @@
                 })
                 .catch(error => console.log(error));
 
+                let id_start = localStorage.getItem('id_start');
 
-
-
+                set_starting_position(id_start);
         })
         .catch(error => console.log(error));
 
@@ -150,10 +150,13 @@
         let adjustedX = (rotatedLeft) / scale;
         let adjustedY = (rotatedTop) / scale;
         console.log(adjustedX, adjustedY)
-        get_next_authorized_step(2).then(paths => {
+        get_next_authorized_step(17).then(paths => {
             ville = id.split('-')[0];
             ville = ville.substring(3);
             ville = ville.replace('_', '');
+
+            console.log(paths);
+
             if (paths.length == 0) {
                 console.log('not authorized');
                 // translates_plane = [adjustedX, adjustedY];
@@ -210,6 +213,7 @@
         ville = ville.substring(3);
         ville = ville.replace('_', '');
         ville = parseInt(ville);
+        console.log(ville);
 
         return fetch('./php/get_path.php', {
             method: 'POST',
@@ -233,6 +237,32 @@
         });
     }
 
+    function set_starting_position(id_starting_position) {
+        let plane = document.getElementsByClassName('div_plane')[0];
+        let start_id = '_x3' + id_starting_position.toString()[0] + '_' + id_starting_position.toString()[1];
+
+        let layer12 = document.getElementById('Layer_12');
+        console.log(layer12);
+
+        let position = document.getElementById(start_id).getBoundingClientRect();
+
+        const svgContainer = document.getElementById('svg-container');
+        const svgRect = svgContainer.getBoundingClientRect();
+        // Obtenir la position de la ville par rapport au conteneur SVG
+        let cityLeft = position.left - svgRect.left;
+        let cityTop = position.top - svgRect.top - 15;
+        // Appliquer la rotation
+        let rotatedLeft = cityLeft * Math.cos(angle * Math.PI / 180) - cityTop * Math.sin(angle * Math.PI / 180);
+        let rotatedTop = cityLeft * Math.sin(angle * Math.PI / 180) + cityTop * Math.cos(angle * Math.PI / 180);
+        // Ajuster pour la translation (les valeurs en pixels)
+        let adjustedX = (rotatedLeft) / scale;
+        let adjustedY = (rotatedTop) / scale;
+
+        translates_plane = [adjustedX, adjustedY];
+        document.getElementsByClassName('div_plane')[0].style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
+        document.getElementsByClassName('div_plane')[0].setAttribute('data-ville', start_id);
+        
+    }
 
     function city_hover(city, etat) {
         if (etat == 0) {
