@@ -77,8 +77,6 @@ function get_info_partie() {
         .then(response => response.json())
         .then(data => {
             let info = data[0];
-            let nom = info.joueur_nom;
-            document.getElementById('nom_joueur').textContent = nom;
 
             data.forEach(cards => {
                 let type = cards.cargaison_type_nom;

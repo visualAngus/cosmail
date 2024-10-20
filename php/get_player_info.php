@@ -7,7 +7,7 @@
     }
 
     // Fonction pour récupérer les informations d'une partie donnée
-    $sql = "SELECT joueurs_actifs.point, pawns.id_pawn, pawns.id_emplacement_link, pawns.etat, type_pawn.type_pawn_name
+    $sql = "SELECT joueurs_actifs.point, pawns.id_pawn, pawns.id_emplacement_link, pawns.etat, type_pawn.type_pawn_name, joueurs_actifs.nom,joueurs_actifs.point,joueurs_actifs.steep
             FROM joueurs_actifs 
             LEFT JOIN pawns ON joueurs_actifs.id_joueur = pawns.id_joueur_link
             LEFT JOIN type_pawn ON pawns.link_type_pawn = type_pawn.id_type_pawn

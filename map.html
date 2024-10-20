@@ -145,9 +145,10 @@
                 .then(data => {
                     for (let i = 0; i < data.length; i++) {
                         let player = data[i];
-                        document.getElementById('nom_joueur').innerText = player['name'];
+                        console.log(player);
+                        document.getElementById('nom_joueur').innerText = player['nom'];
                         document.getElementsByClassName('div_point')[0].children[0].innerText = player['point'];
-                        document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = player['nb_step'];
+                        document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = player['steep'];
 
                         add_plane(i, player['id_pawn'], player['etat'],player['type_pawn_name'],player['id_emplacement_link']);
                     }
@@ -215,6 +216,8 @@
                 return response.text();
             })
             .then(data => {
+                console.log(data);
+
             })
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);
@@ -505,6 +508,15 @@
         let zoom_bar = document.getElementsByClassName('div_zoom_in_bar')[0];
         zoom_bar.style.height = `${100 / 3 * scale}%`;
     });
+
+
+
+
+    // boucle d'update des pions toutes les 5 secondes
+
+    setInterval(function () {
+        
+    }, 5000);
 
 
 </script>
