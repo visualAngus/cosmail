@@ -27,10 +27,29 @@
             WHERE parties.id_partie = '$id_partie' AND joueurs_actifs.id_joueur != '$id' AND id_pawn IS NOT NULL"; ;
     $result2 = mysqli_query($conn, $sql);
     
+    $sql = "SELECT chat.id_player_link, chat.chat, player_color.color, joueurs_actifs.nom, chat.id_chat
+            FROM parties
+            LEFT JOIN joueurs_actifs ON parties.id_partie = joueurs_actifs.id_partie_link
+            LEFT JOIN chat ON joueurs_actifs.id_joueur = chat.id_player_link
+            LEFT JOIN player_color ON joueurs_actifs.numero_joueur = player_color.id_color
+            WHERE parties.id_partie = '$id_partie' AND chat.id_player_link IS NOT NULL";
+    $result3 = mysqli_query($conn, $sql);
+
+
+
     $data2 = [];
     if (mysqli_num_rows($result2) > 0) {
         while ($row = mysqli_fetch_assoc($result2)) {
             $data2[] = $row;
+        }
+    } else {
+        echo json_encode(["error" => "No results found"]);
+    }
+
+    $data3 = [];
+    if (mysqli_num_rows($result3) > 0) {
+        while ($row = mysqli_fetch_assoc($result3)) {
+            $data3[] = $row;
         }
     } else {
         echo json_encode(["error" => "No results found"]);
@@ -41,7 +60,7 @@
         while ($row = mysqli_fetch_assoc($result)) {
             $data[] = $row;
         }
-        echo json_encode(["player" => $data, "opponent" => $data2]);
+        echo json_encode(["player" => $data, "opponent" => $data2, "messages" => $data3]);
     } else {
         echo json_encode(["error" => "No results found"]);
     }

@@ -200,6 +200,19 @@
                         let opponent = opponent_data[j];
                         add_plane(j + player_data.length, opponent['id_pawn'], opponent['etat'],opponent['type_pawn_name'],opponent['id_emplacement_link'],1,opponent["color"]);
                     }
+                    messages = data.messages;
+                    for (let i = 0; i < messages.length; i++) {
+                        console.log(messages[i]);
+                        let ext = 'ext';
+
+                        if (messages[i]['id_player_link'] == id_player) {
+                            ext = 'int';
+                        }
+
+
+                        add_message(messages[i]['chat'],messages[i]['nom'],ext,messages[i]['color']);
+                        id_last_message = messages[i]['id_chat'];
+                    }
                 })
                 .catch(error => {
                     console.error('There was a problem with the fetch operation:', error);
@@ -649,6 +662,7 @@
                 console.error('There was a problem with the fetch operation:', error);
             });
     }, 1000);
+
 
 
 </script>

@@ -45,16 +45,12 @@
                 $data[] = $row;
             }
             
-        } else {
-            echo json_encode(["error" => "No results found"]);
         }
         $data2 = [];
         if (mysqli_num_rows($result2) > 0) {
             while ($row = mysqli_fetch_assoc($result2)) {
                 $data2[] = $row;
             }
-        } else {
-            echo json_encode(["error" => "No results found"]);
         }
 
         echo json_encode(["data" => $data, "data2" => $data2]);
