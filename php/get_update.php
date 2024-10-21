@@ -1,5 +1,6 @@
 <?php
     $id_partie = $_POST['id_partie'];
+    $id_last_message = $_POST['id_last_message'];
 
     // Connexion à la base de données
     $conn = mysqli_connect("localhost", "root", "", "cosmail");
@@ -30,15 +31,33 @@
             WHERE parties.id_partie = '$id_partie' AND id_pawn IS NOT NULL";
         $result = mysqli_query($conn, $sql);
 
+        $sql = "SELECT chat.id_player_link, chat.chat, player_color.color, joueurs_actifs.nom, chat.id_chat
+            FROM parties
+            LEFT JOIN joueurs_actifs ON parties.id_partie = joueurs_actifs.id_partie_link
+            LEFT JOIN chat ON joueurs_actifs.id_joueur = chat.id_player_link
+            LEFT JOIN player_color ON joueurs_actifs.numero_joueur = player_color.id_color
+            WHERE parties.id_partie = '$id_partie' AND chat.id_chat > '$id_last_message' AND chat.id_player_link IS NOT NULL";
+        $result2 = mysqli_query($conn, $sql);
+
         $data = [];
         if (mysqli_num_rows($result) > 0) {
             while ($row = mysqli_fetch_assoc($result)) {
                 $data[] = $row;
             }
-            echo json_encode($data);
+            
         } else {
             echo json_encode(["error" => "No results found"]);
         }
+        $data2 = [];
+        if (mysqli_num_rows($result2) > 0) {
+            while ($row = mysqli_fetch_assoc($result2)) {
+                $data2[] = $row;
+            }
+        } else {
+            echo json_encode(["error" => "No results found"]);
+        }
+
+        echo json_encode(["data" => $data, "data2" => $data2]);
         return;
     }
 

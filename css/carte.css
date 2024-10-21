@@ -86,11 +86,10 @@ body {
 }
 
 .grise {
-    filter: grayscale(30%);
+    filter: grayscale(60%);
     transition: all 0.3s ease;
 }
 .opponent{
-    background-color: red;
     user-select: none;
     pointer-events: none;
 }
