@@ -14,12 +14,10 @@
     <div class="div_page">
         <div class="div_carte">
             <div class="div_piont">
-                <!-- <div class="div_plane">
-                    <div id="svg-plane"></div>
-                </div> -->
             </div>
             <div id="svg-container">
             </div>
+            
         </div>
         <div class="div_controls">
 
@@ -94,6 +92,30 @@
                     deplace_plane(ville);
                 });
             }
+
+            let layer7 = document.getElementById('Layer_7');
+            for (let i = 0; i < layer7.children.length; i++) {
+                let ville = layer7.children[i];
+                ville.addEventListener('click', function () {
+                    deplace_plane(ville);
+                });
+            }
+
+            
+            for (let i = 0; i < layer7.children.length; i++) {
+                let ville = layer7.children[i];
+                let position_tmp = ville.querySelector('rect');
+                if (position_tmp) {
+                    let x = position_tmp.getAttribute('cx');
+                    let y = position_tmp.getAttribute('cy');
+
+                    ville.style.transformOrigin = `${x}px ${y}px`;
+                    ville.style.transform = `rotate(${-angle}deg)`;
+                    ville.style.transition = 'all 0.2s ease';
+                }
+            }
+
+
             let villes_layer = document.getElementById('Layer_8');
 
             // rotation des villes en fonction de la carte
@@ -109,7 +131,32 @@
                     ville.style.transition = 'all 0.2s ease';
                 }
             }
+            
+            let layer12 = document.getElementById('Layer_12');
+            for (let i = 0; i < layer12.children.length; i++) {
+                let ville = layer12.children[i];
+                let position_tmp = ville.querySelector('circle');
+                if (position_tmp) {
+                    let x = position_tmp.getAttribute('cx');
+                    let y = position_tmp.getAttribute('cy');
 
+                    ville.style.transformOrigin = `${x}px ${y}px`;
+                    ville.style.transform = `rotate(${-angle}deg)`;
+                    ville.style.transition = 'all 0.2s ease';
+                }
+            }
+            for (let i = 0; i < layer12.children.length; i++) {
+                let ville = layer12.children[i];
+                ville.addEventListener('mouseover', function () {
+                    city_hover(ville, 1);
+                });
+                ville.addEventListener('mouseout', function () {
+                    city_hover(ville, 0);
+                });
+                ville.addEventListener('click', function () {
+                    deplace_plane(ville);
+                });
+            }
             // chargement de l'avion
             function add_plane(id, id_pawn, etat, type_pawn_name, id_emplacement_link,opponent,color) {
                 color = color;
@@ -152,22 +199,28 @@
                                 }
                             });
 
-                            let layer12 = document.getElementById('Layer_12');
-                            for (let i = 0; i < layer12.children.length; i++) {
-                                let ville = layer12.children[i];
-                                let id = ville.getAttribute('id');
-                                let start_id = String(id_emplacement_link);
-                                start_id = "_x3"+start_id[0]+"_"+start_id[1];
-                                if (id != start_id) {
-                                    ville.classList.add('grise');
-                                }
-                            }
+                            // let layer12 = document.getElementById('Layer_12');
+                            // for (let i = 0; i < layer12.children.length; i++) {
+                            //     let ville = layer12.children[i];
+                            //     let id = ville.getAttribute('id');
+                            //     let start_id = String(id_emplacement_link);
+                            //     start_id = "_x3"+start_id[0]+"_"+start_id[1];
+                            //     console.log("***********************************")
+                            //     console.log(start_id);
+                            //     console.log(id);
+                            //     if (id != start_id) {
+                            //         ville.classList.add('grise');
+                            //     }else{
+                            //         console.log("fdsfsdqfsd sdf sd  ");
+                            //         deplace_plane(ville);
+                            //     }
+                            // }
+                            
                         }
                         set_starting_position(id_emplacement_link, id);
                     })
                     .catch(error => console.log(error));
             }
-
 
 
             fetch('./php/get_player_info.php', {
@@ -220,10 +273,6 @@
         })
         .catch(error => console.log(error));
 
-
-
-
-
     // set des variables
     let click_down = [0, 0]; // Position de la souris lors du clic
     let translates = [0, 0]; // Translation de la carte
@@ -240,7 +289,6 @@
     let color = "";
 
     let id_last_message = 0;
-
 
     // deplacement de l'avion par le click
     function move_plane(event) {
@@ -292,7 +340,9 @@
 
 
         translates_plane[id_pawn] = [adjustedX, adjustedY];
+        console.log(reel_id_pawn);
         let plane = document.querySelector(`.div_piont [id_pawn="${reel_id_pawn}"]`);
+        console.log(plane);
         plane.style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
         plane.setAttribute('data-ville', id_ville);
 
@@ -319,7 +369,31 @@
 
     }
     
-    function get_ville_position(ville){
+    function get_ville_position(start_id){
+
+        console.log(start_id);
+        if (start_id.length == 1) {
+            start_id = "_x3"+start_id[0]+"_";
+        }else if(start_id.length == 2){
+            start_id = "_x3"+start_id[0]+"_"+start_id[1];
+        }
+
+        let layer12 = document.getElementById('Layer_12');
+        let ville = layer12.querySelector(`#${start_id}`);
+        if (ville == null) {
+            let layer8 = document.getElementById('Layer_8');
+            start_id_ = start_id+"-2"
+            ville = layer8.querySelector(`#${start_id_}`);
+        }
+        if(ville == null){
+            let layer7 = document.getElementById('Layer_7');
+            ville = layer7.querySelector(`#${start_id}`);
+        }if(ville == null){
+            let layer7 = document.getElementById('Layer_7');
+            ville = layer7.querySelector(`#${start_id+"-2"}`);
+        }
+        console.log(ville);
+
         let position = ville.getBoundingClientRect();
         const svgContainer = document.getElementById('svg-container');
         const svgRect = svgContainer.getBoundingClientRect();
@@ -334,14 +408,22 @@
     }
 
     function deplace_plane(ville) {
-        // Obtenir la position de la ville
-        let param = get_ville_position(ville);
+        id_ville = ville.id;
+
+        // _x33_1-2 => 31
+        id_ville = id_ville.replace('_x3', '');
+        id_ville = id_ville.replace('_', '');
+
+        id_ville = id_ville.split('-')[0];
+        console.log(id_ville);
+
+        let param = get_ville_position(id_ville);
 
         let adjustedX = param[0];
         let adjustedY = param[1];
         
         // Vérifier si le joueur est autorisé à se déplacer vers la ville
-        get_next_authorized_step(17).then(paths => {
+        get_next_authorized_step(100).then(paths => {
             // Obtenir l'id reelle de la ville
             let id = ville.id;
             ville = id.split('-')[0];
@@ -446,25 +528,19 @@
     function set_starting_position(id_starting_position, pawn_id) {
 
         let start_id = String(id_starting_position);
-        start_id = "_x3"+start_id[0]+"_"+start_id[1];
-
-
-        let layer12 = document.getElementById('Layer_12');
-        let ville = layer12.querySelector(`#${start_id}`);
-
-        if (ville == null) {
-            let layer8 = document.getElementById('Layer_8');
-            start_id = start_id+"-2"
-            ville = layer8.querySelector(`#${start_id}`);
-        }
 
         let adjustedX;
         let adjustedY;
-
-        let postions = get_ville_position(ville); 
+        let postions = get_ville_position(start_id); 
 
         adjustedX = postions[0];
         adjustedY = postions[1];
+
+        if (start_id.length == 1) {
+            start_id = "_x3"+start_id[0]+"_";
+        }else if(start_id.length == 2){
+            start_id = "_x3"+start_id[0]+"_"+start_id[1];
+        }
 
         move_to(pawn_id,start_id,adjustedX, adjustedY,id_starting_position);
 
@@ -520,8 +596,6 @@
     }
 
     function change_pawn_color(pawn, color) {
-        console.log(pawn);
-        console.log(color);
 
         let svg = pawn.querySelector('svg');
         let path = svg.querySelector('path');
@@ -626,22 +700,10 @@
                 data = Data['data'];
                 for (let i = 0; i < data.length; i++) {
                     let ville = data[i]['id_emplacement_link'];
-                    let ville_id = String(ville);
-                    ville_id = "_x3"+ville_id[0]+"_"+ville_id[1];
-
-                    let layer12 = document.getElementById('Layer_12');
-                    let ville_ = layer12.querySelector(`#${ville_id}`);
-
-                    if (ville_ == null) {
-                        let layer8 = document.getElementById('Layer_8');
-                        ville_id = ville_id+"-2"
-                        ville_ = layer8.querySelector(`#${ville_id}`);
-                    }
-
-                    let postions = get_ville_position(ville_);
+                    let postions = get_ville_position(ville);
                     let adjustedX = postions[0];
                     let adjustedY = postions[1];
-                    move_to_update(i,ville,adjustedX, adjustedY,ville,data[i]['id_pawn']);
+                    move_to_update(i,ville,adjustedX, adjustedY,ville,data[i]['id_pawn'],data[i]['color']);
                 }
                 messages = Data['data2'];
                 for (let i = 0; i < messages.length; i++) {
@@ -662,8 +724,6 @@
                 console.error('There was a problem with the fetch operation:', error);
             });
     }, 1000);
-
-
 
 </script>
 

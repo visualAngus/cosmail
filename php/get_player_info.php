@@ -42,28 +42,21 @@
         while ($row = mysqli_fetch_assoc($result2)) {
             $data2[] = $row;
         }
-    } else {
-        echo json_encode(["error" => "No results found"]);
-    }
+    } 
 
     $data3 = [];
     if (mysqli_num_rows($result3) > 0) {
         while ($row = mysqli_fetch_assoc($result3)) {
             $data3[] = $row;
         }
-    } else {
-        echo json_encode(["error" => "No results found"]);
     }
-
     $data = [];
     if (mysqli_num_rows($result) > 0) {
         while ($row = mysqli_fetch_assoc($result)) {
             $data[] = $row;
         }
         echo json_encode(["player" => $data, "opponent" => $data2, "messages" => $data3]);
-    } else {
-        echo json_encode(["error" => "No results found"]);
-    }
+    } 
 
     mysqli_close($conn);
 ?>
