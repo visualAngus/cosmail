@@ -8,6 +8,7 @@ CosMail est un projet de jeu de société développé avec HTML, CSS, java-scrip
 - Gestion de partie de jeu
 - Interface utilisateur intuitive
 - Gestion de partie en ligne
+- Chat en temps réel
 
 
 ## Licence
