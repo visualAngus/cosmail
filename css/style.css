@@ -244,3 +244,34 @@ svg {
 .svg-plane svg path,.svg-boat svg path {
     pointer-events: auto;
 }
+
+.steep{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+
+    display: flex;
+    flex-direction: column;
+    padding-top: 2px;
+    justify-content: flex-start;
+    align-items: flex-start;
+
+    font-size: 0.5em;
+    color: #8a9780;
+
+    transition: all 0.2s ease;
+}
+.steep.boat{
+    color: #9b7c2d;
+}
+
+.wire:hover{
+    stroke-width: 8px !important;
+
+    transition: all 0.3s ease;
+}
+.visible{
+    font-size: 0.8em;
+
+}
