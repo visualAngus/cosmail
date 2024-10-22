@@ -261,6 +261,7 @@ svg {
     color: #8a9780;
 
     transition: all 0.2s ease;
+    opacity: 0.8;
 }
 .steep.boat{
     color: #9b7c2d;
@@ -273,5 +274,5 @@ svg {
 }
 .visible{
     font-size: 0.8em;
-
+    opacity: 1;
 }

@@ -327,6 +327,13 @@
                                 div_steep.style.top = y + 'px';
                                 document.querySelector('.div_carte').appendChild(div_steep);
 
+                                div_steep.addEventListener('mouseover', function () {
+                                    div_steep.classList.add('visible');
+                                });
+                                div_steep.addEventListener('mouseout', function () {
+                                    div_steep.classList.remove('visible');
+                                });
+
                                 wire.addEventListener('mouseover', function () {
                                     div_steep.classList.add('visible');
                                 });
