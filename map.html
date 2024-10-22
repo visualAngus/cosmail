@@ -8,16 +8,35 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/carte.css">
     <link rel="stylesheet" href="css/style_chat.css">
+    <link rel="stylesheet" href="css/style_dice.css">
 </head>
 
 <body>
+    <div class="div_chargement">
+        <h1>Chargement de la carte</h1>
+        <div class="dot-spinner">
+            <div class="dot-spinner__dot"></div>
+            <div class="dot-spinner__dot"></div>
+            <div class="dot-spinner__dot"></div>
+            <div class="dot-spinner__dot"></div>
+            <div class="dot-spinner__dot"></div>
+            <div class="dot-spinner__dot"></div>
+            <div class="dot-spinner__dot"></div>
+            <div class="dot-spinner__dot"></div>
+        </div>
+    </div>
+
+    <div class="div_message_error">
+        <h2 id="en_tete"></h2>
+        <h3 id="erreur_message"></h3>
+    </div>
+
     <div class="div_page">
         <div class="div_carte">
             <div class="div_piont">
             </div>
             <div id="svg-container">
             </div>
-            
         </div>
         <div class="div_controls">
 
@@ -65,14 +84,18 @@
             <div class="div_input">
                 <textarea name="text_area" id="text_area"></textarea>
                 <button id="send_message">Send</button>
-           </div>
+            </div>
+        </div>
+        <div class="dice-container">
+            <div id="die1" class="die">🎲</div>
+            <div id="plus">+</div>
+            <div id="die2" class="die">🎲</div>
         </div>
     </div>
 </body>
 <script src="js/cards.js"></script>
 <script src="js/chat.js"></script>
 <script>
-
     // ouverture de la carte en svg
     fetch('./img/V1.svg')
         .then(response => response.text()) // Récupère le contenu du fichier SVG sous forme de texte
@@ -101,7 +124,7 @@
                 });
             }
 
-            
+
             for (let i = 0; i < layer7.children.length; i++) {
                 let ville = layer7.children[i];
                 let position_tmp = ville.querySelector('rect');
@@ -131,7 +154,7 @@
                     ville.style.transition = 'all 0.2s ease';
                 }
             }
-            
+
             let layer12 = document.getElementById('Layer_12');
             for (let i = 0; i < layer12.children.length; i++) {
                 let ville = layer12.children[i];
@@ -158,7 +181,7 @@
                 });
             }
             // chargement de l'avion
-            function add_plane(id, id_pawn, etat, type_pawn_name, id_emplacement_link,opponent,color) {
+            function add_plane(id, id_pawn, etat, type_pawn_name, id_emplacement_link, opponent, color) {
                 color = color;
                 fetch('./img/plane.svg')
                     .then(response => response.text()) // Récupère le contenu du fichier SVG sous forme de texte
@@ -177,10 +200,10 @@
                         document.getElementsByClassName('div_piont')[0].appendChild(div_plane);
 
                         change_pawn_color(div_plane, color);
-                        
-                        if(opponent == 1){
+
+                        if (opponent == 1) {
                             div_plane.classList.add('opponent');
-                        }else{
+                        } else {
                             div_plane.addEventListener('mousedown', function () {
                                 id_pawn_selected = id;
                                 plane_dragging = true;
@@ -189,6 +212,14 @@
 
                             div_plane.addEventListener('click', function (event) {
                                 id_pawn_selected = id;
+
+                                // tout les autres avions sont enlevés de la classe selected
+                                let planes = document.getElementsByClassName('div_plane');
+                                for (let i = 0; i < planes.length; i++) {
+                                    planes[i].classList.remove('selected');
+                                }
+                                div_plane.classList.add('selected');
+
                             });
 
                             document.addEventListener('mousemove', function (event) {
@@ -196,24 +227,6 @@
                                     move_plane(event);
                                 }
                             });
-
-                            // let layer12 = document.getElementById('Layer_12');
-                            // for (let i = 0; i < layer12.children.length; i++) {
-                            //     let ville = layer12.children[i];
-                            //     let id = ville.getAttribute('id');
-                            //     let start_id = String(id_emplacement_link);
-                            //     start_id = "_x3"+start_id[0]+"_"+start_id[1];
-                            //     console.log("***********************************")
-                            //     console.log(start_id);
-                            //     console.log(id);
-                            //     if (id != start_id) {
-                            //         ville.classList.add('grise');
-                            //     }else{
-                            //         console.log("fdsfsdqfsd sdf sd  ");
-                            //         deplace_plane(ville);
-                            //     }
-                            // }
-                            
                         }
                         set_starting_position(id_emplacement_link, id);
                     })
@@ -242,25 +255,34 @@
                         document.getElementById('nom_joueur').innerText = nom;
                         document.getElementsByClassName('div_point')[0].children[0].innerText = player['point'];
                         document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = player['steep'];
+                        localStorage.setItem('nb_steep', player['steep']);
 
-                        add_plane(i, player['id_pawn'], player['etat'],player['type_pawn_name'],player['id_emplacement_link'],0,player["color"]);
+                        add_plane(i, player['id_pawn'], player['etat'], player['type_pawn_name'], player['id_emplacement_link'], 0, player["color"]);
                     }
 
                     let opponent_data = data.opponent;
                     for (let j = 0; j < opponent_data.length; j++) {
                         let opponent = opponent_data[j];
-                        add_plane(j + player_data.length, opponent['id_pawn'], opponent['etat'],opponent['type_pawn_name'],opponent['id_emplacement_link'],1,opponent["color"]);
+                        add_plane(j + player_data.length, opponent['id_pawn'], opponent['etat'], opponent['type_pawn_name'], opponent['id_emplacement_link'], 1, opponent["color"]);
                     }
-                    messages = data.messages;
+                    let messages = data.messages;
                     for (let i = 0; i < messages.length; i++) {
                         let ext = 'ext';
 
                         if (messages[i]['id_player_link'] == id_player) {
                             ext = 'int';
                         }
-                        add_message(messages[i]['chat'],messages[i]['nom'],ext,messages[i]['color']);
+                        add_message(messages[i]['chat'], messages[i]['nom'], ext, messages[i]['color']);
                         id_last_message = messages[i]['id_chat'];
                     }
+                    let game = data.game[0];
+                    if (game['id_joueur'] == id_player) {
+                        show_erreur("C'est à toi de jouer", 'Message');
+                    }else{
+                        let nom = game['nom'];
+                        show_erreur(`C'est à ${nom} de jouer`, 'Message');
+                    }
+                    
                 })
                 .catch(error => {
                     console.error('There was a problem with the fetch operation:', error);
@@ -268,85 +290,85 @@
 
 
 
-                function add_steep_to_wire() {
+            function add_steep_to_wire() {
 
 
-                    let wires = Array.from(document.querySelectorAll('.cls-6, .cls-13'));
-                    let ids = [];
+                let wires = Array.from(document.querySelectorAll('.cls-6, .cls-13'));
+                let ids = [];
 
-                    for (let i = 0; i < wires.length; i++) {
-                        let wire = wires[i];
-                        let id = wire.getAttribute('id');
-                        if (id == null) continue;
+                for (let i = 0; i < wires.length; i++) {
+                    let wire = wires[i];
+                    let id = wire.getAttribute('id');
+                    if (id == null) continue;
 
-                        // Nettoyage de l'ID
-                        id = id.replace(/_x3|_/g, '');
-                        ids.push(id);
-                        wires[i].setAttribute('id_base', id);
+                    // Nettoyage de l'ID
+                    id = id.replace(/_x3|_/g, '');
+                    ids.push(id);
+                    wires[i].setAttribute('id_base', id);
 
-                        if (wires[i].classList.contains('cls-6')) {
-                            wires[i].classList.add('plane');
-                        } else {
-                            wires[i].classList.add('boat');
-                        }
+                    if (wires[i].classList.contains('cls-6')) {
+                        wires[i].classList.add('plane');
+                    } else {
+                        wires[i].classList.add('boat');
                     }
-
-                    let steeps = [];
-
-                    fetch('./php/get_steep_by_id.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: new URLSearchParams({ ids: JSON.stringify(ids) })
-                    })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            steeps = data; // Récupération des steep
-                            for (let i = 0; i < steeps.length; i++) {
-                                let wire = document.querySelector('[id_base="' + steeps[i].id_liaison + '"]');
-                                let position = wire.getBoundingClientRect();
-
-                                let x = (position.left + position.right) / 2;
-                                let y = (position.top + position.bottom) / 2;
-
-                                let div_steep = document.createElement('div');
-                                div_steep.classList.add('steep');
-                                if (steeps[i].type == 'avion') {
-                                    div_steep.classList.add('boat');
-                                } else {
-                                    div_steep.classList.add('plane');
-                                }
-                                div_steep.innerHTML = '<h4>' + steeps[i].length + '</h4>';
-                                div_steep.style.left = x + 'px';
-                                div_steep.style.top = y + 'px';
-                                document.querySelector('.div_carte').appendChild(div_steep);
-
-                                div_steep.addEventListener('mouseover', function () {
-                                    div_steep.classList.add('visible');
-                                });
-                                div_steep.addEventListener('mouseout', function () {
-                                    div_steep.classList.remove('visible');
-                                });
-
-                                wire.addEventListener('mouseover', function () {
-                                    div_steep.classList.add('visible');
-                                });
-                                wire.addEventListener('mouseout', function () {
-                                    div_steep.classList.remove('visible');
-                                });
-                            }
-                        })
-                        .catch(error => console.log(error));
                 }
 
-                add_steep_to_wire();
+                let steeps = [];
 
+                fetch('./php/get_steep_by_id.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({ ids: JSON.stringify(ids) })
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        steeps = data; // Récupération des steep
+                        for (let i = 0; i < steeps.length; i++) {
+                            let wire = document.querySelector('[id_base="' + steeps[i].id_liaison + '"]');
+                            let position = wire.getBoundingClientRect();
+
+                            let x = (position.left + position.right) / 2;
+                            let y = (position.top + position.bottom) / 2;
+
+                            let div_steep = document.createElement('div');
+                            div_steep.classList.add('steep');
+                            if (steeps[i].type == 'avion') {
+                                div_steep.classList.add('boat');
+                            } else {
+                                div_steep.classList.add('plane');
+                            }
+                            div_steep.innerHTML = '<h4>' + steeps[i].length + '</h4>';
+                            div_steep.style.left = x + 'px';
+                            div_steep.style.top = y + 'px';
+                            document.querySelector('.div_carte').appendChild(div_steep);
+
+                            div_steep.addEventListener('mouseover', function () {
+                                div_steep.classList.add('visible');
+                            });
+                            div_steep.addEventListener('mouseout', function () {
+                                div_steep.classList.remove('visible');
+                            });
+
+                            wire.addEventListener('mouseover', function () {
+                                div_steep.classList.add('visible');
+                            });
+                            wire.addEventListener('mouseout', function () {
+                                div_steep.classList.remove('visible');
+                            });
+                        }
+                    })
+                    .catch(error => console.log(error));
+            }
+
+            add_steep_to_wire();
+            chargement = true;
         })
         .catch(error => console.log(error));
 
@@ -366,6 +388,7 @@
     let color = "";
 
     let id_last_message = 0;
+    let chargement = false;
 
     // deplacement de l'avion par le click
     function move_plane(event) {
@@ -383,9 +406,7 @@
         click_down_plane = [event.clientX, event.clientY];
     }
     // deplacement de l'avion
-    function move_to(id_pawn,id_ville,adjustedX, adjustedY,id_emplacement) {
-
-
+    function move_to(id_pawn, id_ville, adjustedX, adjustedY, id_emplacement,valeur) {
         let plane_tmp = document.querySelector(`.div_piont [data-ville="${id_ville}"]`);
         if (plane_tmp) {
             //faire en sorte que les avions ne se superposent pas
@@ -395,18 +416,23 @@
             adjustedY += y;
         }
 
+        localStorage.setItem('nb_steep', valeur);
+
         translates_plane[id_pawn] = [adjustedX, adjustedY];
+        document.querySelector('.div_piont').querySelector(`#plane-${id_pawn}`).style.transition = 'transform 2s ease';
         document.querySelector('.div_piont').querySelector(`#plane-${id_pawn}`).style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
         document.querySelector('.div_piont').querySelector(`#plane-${id_pawn}`).setAttribute('data-ville', id_ville);
 
         let id_pawn_data = document.querySelector('.div_piont').querySelector(`#plane-${id_pawn}`).getAttribute('id_pawn');
+
+        document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = valeur;
 
         fetch('./php/update_pawn_position.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: new URLSearchParams({ id_player: id_player, id_pawn: id_pawn_data, id_emplacement: id_emplacement })
+            body: new URLSearchParams({ id_player: id_player, id_pawn: id_pawn_data, id_emplacement: id_emplacement ,valeur:valeur})
         })
             .then(response => {
                 if (!response.ok) {
@@ -422,9 +448,9 @@
             });
 
     }
-    
-    function move_to_update(id_pawn,id_ville,adjustedX, adjustedY,id_emplacement,reel_id_pawn) {
-        
+
+    function move_to_update(id_pawn, id_ville, adjustedX, adjustedY, id_emplacement, reel_id_pawn) {
+
         //verifier si il y a deja un avion sur la ville
         let plane_tmp = document.querySelector(`.div_piont [data-ville="${id_ville}"]`);
         if (plane_tmp) {
@@ -434,13 +460,8 @@
             adjustedX += x;
             adjustedY += y;
         }
-        console.log("***********************************")
-        console.log(adjustedX);
-        console.log(adjustedY);
         translates_plane[id_pawn] = [adjustedX, adjustedY];
-        console.log(reel_id_pawn);
         let plane = document.querySelector(`.div_piont [id_pawn="${reel_id_pawn}"]`);
-        console.log(plane);
 
 
         plane.style.transform = `translate(${adjustedX}px, ${adjustedY}px)`;
@@ -468,28 +489,43 @@
             });
 
     }
-    
-    function get_ville_position(start_id){
+
+    function get_ville_position(start_id) {
 
         if (start_id.length == 1) {
-            start_id = "_x3"+start_id[0]+"_";
-        }else if(start_id.length == 2){
-            start_id = "_x3"+start_id[0]+"_"+start_id[1];
+            start_id = "_x3" + start_id[0] + "_";
+        } else if (start_id.length == 2) {
+            start_id = "_x3" + start_id[0] + "_" + start_id[1];
         }
 
         const layers = ['Layer_12', 'Layer_8', 'Layer_7'];
+        let actuel_layer;
         let ville = null;
         for (const layerId of layers) {
             const layer = document.getElementById(layerId);
             ville = layer.querySelector(`#${start_id}`) || layer.querySelector(`#${start_id}-2`);
+            actuel_layer = layer;
             if (ville) break;
         }
 
         let position = ville.getBoundingClientRect();
         const svgContainer = document.getElementById('svg-container');
         const svgRect = svgContainer.getBoundingClientRect();
-        let cityLeft = position.left - svgRect.left;
-        let cityTop = position.top - svgRect.top - 15;
+
+        let cityLeft;
+        let cityTop;
+
+        if (actuel_layer.id == 'Layer_8') {
+            cityLeft = position.left - svgRect.left;
+            cityTop = position.top - svgRect.top - 15;
+        } else if (actuel_layer.id == 'Layer_7') {
+            cityLeft = position.left - svgRect.left - 10;
+            cityTop = position.top - svgRect.top - 25;
+        } else {
+            cityLeft = position.left - svgRect.left;
+            cityTop = position.top - svgRect.top - 15;
+        }
+
         let rotatedLeft = cityLeft * Math.cos(angle * Math.PI / 180) - cityTop * Math.sin(angle * Math.PI / 180);
         let rotatedTop = cityLeft * Math.sin(angle * Math.PI / 180) + cityTop * Math.cos(angle * Math.PI / 180);
         let adjustedX = (rotatedLeft) / scale;
@@ -509,13 +545,11 @@
         let adjustedX = param[0];
         let adjustedY = param[1];
 
-        
         // Vérifier si le joueur est autorisé à se déplacer vers la ville
-        get_next_authorized_step(100).then(paths => {
+        get_next_authorized_step(localStorage.getItem('nb_steep')).then(paths => {
             // Obtenir l'id reelle de la ville
             let paths_ = paths.map(path => path[0]);
             let steeps = paths.map(path => path[1]);
-
 
             let id = ville.id;
             ville = id.split('-')[0];
@@ -525,6 +559,7 @@
             // si la ville n'a pas de connection
             if (paths_.length == 0) {
                 console.log('not authorized');
+                show_erreur('Vous ne pouvez plus vous déplacer vers aucune ville', 'Erreur');
                 return;
             }
             // si la ville est autorisé / son id est dans les paths
@@ -532,12 +567,14 @@
                 console.log('authorized');
 
                 let path_id = paths_.findIndex(path => path === ville);
-                let val = steeps[path_id];
-                move_to(id_pawn_selected,ville,adjustedX, adjustedY,ville);
+                let val = localStorage.getItem('nb_steep') - steeps[path_id];
+                
+                move_to(id_pawn_selected, ville, adjustedX, adjustedY, ville, val);
             }
             // si la ville n'est pas autorisé
             else {
                 console.log('not authorized');
+                show_erreur('Vous ne pouvez pas vous déplacer vers cette ville', 'Erreur');
                 return;
             }
         }).catch(error => {
@@ -548,7 +585,7 @@
     function findPaths(positions, startPosition, maxLength) {
         let paths = new Set();
         let queue = [{ position: startPosition, length: 0 }];
-        
+
         while (queue.length > 0) {
             let { position, length } = queue.shift();
 
@@ -559,8 +596,7 @@
                 } else if (link[2] == position) {
                     nextPosition = [link[1], link[3]];
                 }
-
-                if (nextPosition && length + link[3] <= maxLength) {
+                if (nextPosition && parseInt(length) + parseInt(link[3]) <= parseInt(maxLength)) {
                     paths.add(nextPosition);
                     queue.push({ position: nextPosition, length: length + link[3] });
                 }
@@ -589,7 +625,7 @@
             ville = ville.substring(3);
             ville = ville.replace('_', '');
             ville = parseInt(ville);
-        }else{
+        } else {
             ville = ville_tmp;
         }
 
@@ -623,18 +659,18 @@
 
         let adjustedX;
         let adjustedY;
-        let postions = get_ville_position(start_id); 
+        let postions = get_ville_position(start_id);
 
         adjustedX = postions[0];
         adjustedY = postions[1];
 
         if (start_id.length == 1) {
-            start_id = "_x3"+start_id[0]+"_";
-        }else if(start_id.length == 2){
-            start_id = "_x3"+start_id[0]+"_"+start_id[1];
+            start_id = "_x3" + start_id[0] + "_";
+        } else if (start_id.length == 2) {
+            start_id = "_x3" + start_id[0] + "_" + start_id[1];
         }
 
-        move_to(pawn_id,start_id,adjustedX, adjustedY,id_starting_position);
+        move_to(pawn_id, start_id, adjustedX, adjustedY, id_starting_position,localStorage.getItem('nb_steep'));
 
 
     }
@@ -770,7 +806,7 @@
         let zoom_bar = document.getElementsByClassName('div_zoom_in_bar')[0];
         zoom_bar.style.height = `${100 / 3 * scale}%`;
     });
-    
+
     // boucle d'update des pions toutes les 5 secondes
     setInterval(function () {
         fetch('./php/get_update.php', {
@@ -778,7 +814,7 @@
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: new URLSearchParams({ id_partie: id_partie, id_last_message: id_last_message})
+            body: new URLSearchParams({ id_partie: id_partie, id_last_message: id_last_message, id_player: id_player})
         })
             .then(response => {
                 if (!response.ok) {
@@ -790,15 +826,15 @@
                 if (Data['data'] == null) {
                     return;
                 }
-                data = Data['data'];
+                let data = Data['data'];
                 for (let i = 0; i < data.length; i++) {
                     let ville = data[i]['id_emplacement_link'];
                     let postions = get_ville_position(ville);
                     let adjustedX = postions[0];
                     let adjustedY = postions[1];
-                    move_to_update(i,ville,adjustedX, adjustedY,ville,data[i]['id_pawn'],data[i]['color']);
+                    move_to_update(i, ville, adjustedX, adjustedY, ville, data[i]['id_pawn'], data[i]['color']);
                 }
-                messages = Data['data2'];
+                let messages = Data['data2'];
                 for (let i = 0; i < messages.length; i++) {
                     let ext = 'ext';
 
@@ -807,8 +843,16 @@
                     }
 
 
-                    add_message(messages[i]['chat'],messages[i]['nom'],ext,messages[i]['color']);
+                    add_message(messages[i]['chat'], messages[i]['nom'], ext, messages[i]['color']);
                     id_last_message = messages[i]['id_chat'];
+                }
+
+                let game = Data.game[0];
+                if (game['id_joueur'] == id_player) {
+                    show_erreur("C'est à toi de jouer", 'Message');
+                }else{
+                    let nom = game['nom'];
+                    show_erreur(`C'est à ${nom} de jouer`, 'Message');
                 }
 
             })
@@ -817,6 +861,102 @@
             });
     }, 1000);
 
+
+    // gestion des dés pour les déplacements
+    document.querySelector('.dice-container').addEventListener('click', startRolling);
+    document.querySelector('.dice-container').classList.add('active');
+    let rollingInterval;
+    let isRolling = false;
+    let time = 0;
+
+    function rollDice() {
+        let die1 = Math.floor(Math.random() * 6) + 1;
+        let die2 = Math.floor(Math.random() * 6) + 1;
+
+        document.getElementById('die1').textContent = die1;
+        document.getElementById('die2').textContent = die2;
+    }
+
+    function startRolling() {
+        if (isRolling) {
+            document.querySelector('.dice-container').classList.remove('active');
+            return;
+        }
+        isRolling = true;
+        // Lancer les dés aléatoirement toutes les 100ms
+        rollingInterval = setInterval(rollDice, 100);
+
+        // Arrêter le lancer après 2 secondes
+        setTimeout(function () {
+            document.querySelector('.dice-container').classList.add('active');
+            clearInterval(rollingInterval);
+            rollDice();
+            isRolling = false;
+            time = 0;
+
+            let sum = parseInt(document.getElementById('die1').textContent) * parseInt(document.getElementById('die2').textContent);
+            localStorage.setItem('nb_steep', sum);
+
+            fetch('./php/update_player.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({ id_player: id_player, steep: sum })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(Data => {
+                    setTimeout(function () {
+                        document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = sum;
+                    }, 500);
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+
+
+        }, 1000);
+    }
+
+   function show_erreur(message, en_tete) {
+
+        //verification si la boite contient le meme message
+
+        let box = document.getElementsByClassName('div_message_error')[0]
+        box.style.transform = 'translateX(-50%) translateY(0)';
+        
+        box.querySelector('#erreur_message').innerText = message;
+        box.querySelector('#en_tete').innerText = en_tete;
+
+        setTimeout(function () {
+            hide_erreur();
+        }, 5000);
+    }
+
+    function hide_erreur() {
+        let box = document.getElementsByClassName('div_message_error')[0]
+        box.style.transform = 'translateX(-50%) translateY(-300px)';
+    }
+
+    // fermer la page de chargement
+    setInterval(function () {
+        if (chargement) {
+            setTimeout(function () {
+                document.getElementsByClassName('div_chargement')[0].style.display = 'none';
+            }, 2000);
+        }
+
+    }, 1000);
+
 </script>
 
 </html>
+
+
+
+// finaliser la div de message d'erreur ensuite faire la gestion des toures de jeu ...

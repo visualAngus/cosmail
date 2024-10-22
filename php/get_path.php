@@ -2,10 +2,7 @@
     $position_id = $_POST['position'];
 
     // Connexion à la base de données
-    $conn = mysqli_connect("localhost", "root", "", "cosmail");
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
+    include 'connexion.php';
 
     // Fonction pour récupérer les liaisons à partir d'une position donnée
     function requet($conn, $position_id) {

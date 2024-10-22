@@ -3,10 +3,7 @@
     $txt = $_POST['txt'];
 
     // Connexion à la base de données
-    $conn = mysqli_connect("localhost", "root", "", "cosmail");
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
+    include 'connexion.php';
 
     // Fonction pour créer une partie
     $sql = "INSERT INTO chat (id_player_link, chat) VALUES ('$id_player', '$txt')";

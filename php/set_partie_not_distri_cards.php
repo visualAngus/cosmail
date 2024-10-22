@@ -3,10 +3,7 @@
     $liste_emplacement = $_POST['liste_emplacement'];
     $id_partie = $_POST['id_partie'];
     // Connexion à la base de données
-    $conn = mysqli_connect("localhost", "root", "", "cosmail");
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
+    include 'connexion.php';
 
     $stmt = $conn->prepare("INSERT INTO joueurs_actifs (id_partie_link, point,type,nom) VALUES (?, ?, 1, 'Dealer')");
     $point = 0;

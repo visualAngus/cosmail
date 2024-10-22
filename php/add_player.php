@@ -1,10 +1,8 @@
 <?php
 
     // Connexion à la base de données
-    $conn = mysqli_connect("localhost", "root", "", "cosmail");
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
+    include 'connexion.php';
+    
     $id_partie_link = $_POST['id_partie'];; // Replace with actual value
     $nom = $_POST['nom'];; // Replace with actual value
 

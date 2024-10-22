@@ -3,10 +3,7 @@
     $id_partie = $_POST['id_partie']; 
 
     // Connexion à la base de données
-    $conn = mysqli_connect("localhost", "root", "", "cosmail");
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
+    include 'connexion.php';
 
     // Fonction pour récupérer les informations d'une partie donnée
     $sql = "SELECT joueurs_actifs.point, pawns.id_pawn, pawns.id_emplacement_link, pawns.etat, type_pawn.type_pawn_name, joueurs_actifs.nom,joueurs_actifs.point,joueurs_actifs.steep,player_color.color
@@ -35,6 +32,11 @@
             WHERE parties.id_partie = '$id_partie' AND chat.id_player_link IS NOT NULL";
     $result3 = mysqli_query($conn, $sql);
 
+    $sql = "SELECT parties.etat, parties.tour_de_jeu as tour, joueurs_actifs.id_joueur, joueurs_actifs.nom
+            FROM parties 
+            LEFT JOIN joueurs_actifs ON parties.id_partie = joueurs_actifs.id_partie_link
+            WHERE id_partie = '$id_partie' AND joueurs_actifs.id_partie_link = '$id_partie' AND joueurs_actifs.numero_joueur = parties.tour_de_jeu";
+    $result4 = mysqli_query($conn, $sql);
 
 
     $data2 = [];
@@ -50,12 +52,19 @@
             $data3[] = $row;
         }
     }
+
+    $data4 = [];
+    if (mysqli_num_rows($result4) > 0) {
+        while ($row = mysqli_fetch_assoc($result4)) {
+            $data4[] = $row;
+        }
+    }
     $data = [];
     if (mysqli_num_rows($result) > 0) {
         while ($row = mysqli_fetch_assoc($result)) {
             $data[] = $row;
         }
-        echo json_encode(["player" => $data, "opponent" => $data2, "messages" => $data3]);
+        echo json_encode(["player" => $data, "opponent" => $data2, "messages" => $data3, "game" => $data4]);
     } 
 
     mysqli_close($conn);

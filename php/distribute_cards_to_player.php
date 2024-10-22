@@ -4,10 +4,7 @@
     $liste_emplacement = $_POST['liste_emplacement'];
 
     // Connexion à la base de données
-    $conn = mysqli_connect("localhost", "root", "", "cosmail");
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
+    include 'connexion.php';
 
     // Fonction pour distribuer les cartes à un joueur
     function distribuer_cartes($conn, $id_joueur, $id_emplacement) {

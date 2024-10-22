@@ -2,17 +2,18 @@
     $id_pawn = $_POST['id_pawn'];
     $id_player = $_POST['id_player'];
     $id_emplacement = $_POST['id_emplacement'];
-
+    $valeur = $_POST['valeur'];
     // Connexion à la base de données
-    $conn = mysqli_connect("localhost", "root", "", "cosmail");
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
+    include 'connexion.php';
 
     // Requête pour mettre à jour l'emplacement du pion
     $sql = "UPDATE pawns SET id_emplacement_link = '$id_emplacement' WHERE id_pawn = '$id_pawn' AND id_joueur_link = '$id_player'";
     $result = mysqli_query($conn, $sql);
 
+    if (is_int($steep)) {
+        $sql = "UPDATE joueurs_actifs SET steep = '$valeur' WHERE id_joueur = '$id_player'";
+        $result = mysqli_query($conn, $sql);
+    }
 
     $sql = "UPDATE parties SET counter_modif = counter_modif + 1 WHERE id_partie = (SELECT id_partie_link FROM joueurs_actifs WHERE id_joueur = '$id_player')";
     $result = mysqli_query($conn, $sql);

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lancer de dés</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .dice-container {
+            display: flex;
+            justify-content: space-around;
+            width: 250px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+
+
+            cursor: pointer;
+        }
+        .dice-container.active:active {
+            background-color: #c5c4c4;
+        }
+        .die {
+            font-size: 50px;
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            background-color: white;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #plus{
+            font-size: 50px;
+            padding: 10px;
+            border-radius: 10px;
+            width: 60px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            user-select: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dice-container">
+        <div id="die1" class="die">🎲</div>
+        <div id="plus">+</div>
+        <div id="die2" class="die">🎲</div>
+    </div>
+
+    <script>
+
+        document.querySelector('.dice-container').addEventListener('click', startRolling);
+        document.querySelector('.dice-container').classList.add('active');
+        let rollingInterval;
+        let isRolling = false;
+        let time = 0;
+
+        function rollDice() {
+            let die1 = Math.floor(Math.random() * 6) + 1;
+            let die2 = Math.floor(Math.random() * 6) + 1;
+
+            document.getElementById('die1').textContent = die1;
+            document.getElementById('die2').textContent = die2;
+        }
+
+        function startRolling() {
+            if (isRolling) {
+                document.querySelector('.dice-container').classList.remove('active');
+                return;
+            }
+            isRolling = true;
+            // Lancer les dés aléatoirement toutes les 100ms
+            rollingInterval = setInterval(rollDice, 100);
+
+            // Arrêter le lancer après 2 secondes
+            setTimeout(function () {
+                document.querySelector('.dice-container').classList.add('active');
+                clearInterval(rollingInterval);
+                rollDice();
+                isRolling = false;
+                time = 0;
+            }, 1000);
+        }
+
+    </script>
+</body>
+
+</html>

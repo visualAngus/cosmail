@@ -5,10 +5,7 @@
     $token = bin2hex(random_bytes(16));
 
     // Connexion à la base de données
-    $conn = mysqli_connect("localhost", "root", "", "cosmail");
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
+    include 'connexion.php';
 
 
     // Fonction pour créer une partie

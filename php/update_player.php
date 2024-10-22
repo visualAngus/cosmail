@@ -1,13 +1,15 @@
 <?php
-    $id_pawn = $_POST['id_pawn'];
     $id_player = $_POST['id_player'];
-    $id_emplacement = $_POST['id_emplacement'];
+    $steep = $_POST['steep'];
 
     // Connexion à la base de données
     include 'connexion.php';
 
     // Requête pour mettre à jour l'emplacement du pion
-    $sql = "UPDATE pawns SET id_emplacement_link = '$id_emplacement' WHERE id_pawn = '$id_pawn' AND id_joueur_link = '$id_player'";
+    $sql = "UPDATE joueurs_actifs SET steep = '$steep' WHERE id_joueur = '$id_player'";
+    $result = mysqli_query($conn, $sql);
+
+    $sql = "UPDATE parties SET counter_modif = counter_modif + 1 WHERE id_partie = (SELECT id_partie_link FROM joueurs_actifs WHERE id_joueur = '$id_player')";
     $result = mysqli_query($conn, $sql);
 
     $sql = "SELECT counter_modif FROM parties WHERE id_partie = (SELECT id_partie_link FROM joueurs_actifs WHERE id_joueur = '$id_player')";

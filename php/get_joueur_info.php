@@ -3,10 +3,7 @@
     $id_partie = $_POST['id_partie'];
 
     // Connexion à la base de données
-    $conn = mysqli_connect("localhost", "root", "", "cosmail");
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
+    include 'connexion.php';
 
     // Fonction pour récupérer les informations d'une partie donnée
     $sql = "SELECT * FROM joueurs_actifs WHERE 	id_joueur = '$id' AND id_partie = '$id_partie'";
