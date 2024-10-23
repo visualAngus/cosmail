@@ -79,13 +79,21 @@
                     <div class="div_barre"></div>
                 </div>
             </div>
-            <div class="div_chat_messages">
+            <div class="div_onlets_chat">
+                <button class="bnt_change" id="1">Chat</button>
+                <button class="bnt_change" id="2">Log</button>
+            </div>
+            <div class="div_chat_messages"></div>
+            <div class="div_log_messages">
+                <div class="log">
+                </div>
             </div>
             <div class="div_input">
                 <textarea name="text_area" id="text_area"></textarea>
                 <button id="send_message">Send</button>
             </div>
         </div>
+
         <div class="dice-container">
             <div id="die1" class="die">🎲</div>
             <div id="plus">x</div>
@@ -259,7 +267,7 @@
                         document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = player['steep'];
                         localStorage.setItem('nb_steep', player['steep']);
                         localStorage.setItem('numero_joueur', player['numero_joueur']);
-
+                        color = player["color"];
                         add_plane(i, player['id_pawn'], player['etat'], player['type_pawn_name'], player['id_emplacement_link'], 0, player["color"]);
                     }
 
@@ -398,6 +406,7 @@
     let color = "";
 
     let id_last_message = 0;
+    let id_last_log = 0;
     let which_player_is_playing = 0;
     let chargement = false;
 
@@ -406,6 +415,11 @@
     let can_move = false;
     let is_message = false;
     let nb_message_en_attente = 0;
+
+    // gestion des dés pour les déplacements
+    document.querySelector('.dice-container').addEventListener('click', startRolling);
+    let rollingInterval;
+    let time = 0;
 
     // deplacement de l'avion par le click
     function move_plane(event) {
@@ -423,7 +437,7 @@
         click_down_plane = [event.clientX, event.clientY];
     }
     // deplacement de l'avion
-    function move_to(id_pawn, id_ville, adjustedX, adjustedY, id_emplacement, valeur) {
+    function move_to(id_pawn, id_ville, adjustedX, adjustedY, id_emplacement, valeur,who) {
         // let plane_tmp = document.querySelector(`.div_piont [data-ville="${id_ville}"]`);
         // if (plane_tmp) {
         //     //faire en sorte que les avions ne se superposent pas
@@ -454,10 +468,14 @@
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                return response.text();
+                return response.json();
             })
             .then(data => {
                 localStorage.setItem('nb_steep', valeur);
+                if (who == 1) {
+                    console.log(data);
+                    add_log_to_base(`<a>${nom}<a> a déplacé son piont a ${data["emplacement"]} il lui reste ${valeur} pas`);
+                }
 
             })
             .catch(error => {
@@ -468,15 +486,7 @@
 
     function move_to_update(id_pawn, id_ville, adjustedX, adjustedY, id_emplacement, reel_id_pawn) {
 
-        //verifier si il y a deja un avion sur la ville
-        // let plane_tmp = document.querySelector(`.div_piont [data-ville="${id_ville}"]`);
-        // if (plane_tmp) {
-        //     //faire en sorte que les avions ne se superposent pas
-        //     let x = (Math.random() * 20) - 10;
-        //     let y = (Math.random() * 20) - 10;
-        //     adjustedX += x;
-        //     adjustedY += y;
-        // }
+
         translates_plane[id_pawn] = [adjustedX, adjustedY];
         let plane = document.querySelector(`.div_piont [id_pawn="${reel_id_pawn}"]`);
 
@@ -586,7 +596,7 @@
                 let path_id = paths_.findIndex(path => path === ville);
                 let val = localStorage.getItem('nb_steep') - steeps[path_id];
 
-                move_to(id_pawn_selected, ville, adjustedX, adjustedY, ville, val);
+                move_to(id_pawn_selected, ville, adjustedX, adjustedY, ville, val,1);
                 fetch('./php/update_player.php', {
                     method: 'POST',
                     headers: {
@@ -640,7 +650,6 @@
 
         return Array.from(paths);
     }
-
     // Fonction pour obtenir les étapes autorisées
     function get_next_authorized_step(nb_step) {
         // Obtenir la position actuelle de l'avion
@@ -686,7 +695,6 @@
                 return []; // Retourner un tableau vide en cas d'erreur
             });
     }
-
 
     function get_next_all_authorized_step(nb_step) {
         // Obtenir la position actuelle de l'avion
@@ -750,7 +758,6 @@
         });
     }
 
-
     // Fonction pour définir la position de départ de l'avion
     function set_starting_position(id_starting_position, pawn_id) {
 
@@ -768,8 +775,7 @@
         } else if (start_id.length == 2) {
             start_id = "_x3" + start_id[0] + "_" + start_id[1];
         }
-
-        move_to(pawn_id, start_id, adjustedX, adjustedY, id_starting_position, localStorage.getItem('nb_steep'));
+        move_to(pawn_id, start_id, adjustedX, adjustedY, id_starting_position, localStorage.getItem("nb_steep"),0);
 
 
     }
@@ -830,7 +836,6 @@
         path.style.fill = color;
     }
 
-
     document.addEventListener('mouseup', function (event) {
         dragging = false;
         plane_dragging = false;
@@ -845,7 +850,11 @@
         if (event.clientX > divChat.getBoundingClientRect().left && event.clientX < divChat.getBoundingClientRect().right && event.clientY > divChat.getBoundingClientRect().top && event.clientY < divChat.getBoundingClientRect().bottom) {
             divChat.scrollTop += event.deltaY;
             return;
-
+        }
+        divChat = document.getElementsByClassName('div_log_messages')[0];
+        if (event.clientX > divChat.getBoundingClientRect().left && event.clientX < divChat.getBoundingClientRect().right && event.clientY > divChat.getBoundingClientRect().top && event.clientY < divChat.getBoundingClientRect().bottom) {
+            divChat.scrollTop += event.deltaY;
+            return;
         }
 
 
@@ -913,7 +922,7 @@
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: new URLSearchParams({ id_partie: id_partie, id_last_message: id_last_message, id_player: id_player })
+            body: new URLSearchParams({ id_partie: id_partie, id_last_message: id_last_message, id_player: id_player, id_last_log:id_last_log })
         })
             .then(response => {
                 if (!response.ok) {
@@ -960,17 +969,17 @@
                 document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = game['steep'];
                 localStorage.setItem('nb_steep', game['steep']);
 
+                let log = Data['log'];
+                for (let i = 0; i < log.length; i++) {
+                    add_log(log[i]['txt'], log[i]['color']);
+                    id_last_log = log[i]['id_log_message'];
+                }
+
             })
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);
             });
     }, 1000);
-
-
-    // gestion des dés pour les déplacements
-    document.querySelector('.dice-container').addEventListener('click', startRolling);
-    let rollingInterval;
-    let time = 0;
 
     function rollDice() {
         let die1 = Math.floor(Math.random() * 6) + 1;
@@ -1017,6 +1026,7 @@
                 .then(Data => {
                     setTimeout(function () {
                         document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = sum;
+                        add_log_to_base(`<a>${nom}<a> a lancé les dés et a obtenu ${sum} points`);
                         is_roll = true;
                     }, 500);
                 })
@@ -1130,6 +1140,51 @@
         }
 
     }, 1000);
+
+
+    function add_log_to_base(txt){
+        fetch('./php/add_log.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({ id_player: id_player, id_partie:id_partie, txt: txt})
+        })
+        .then(response => response.text())
+        .then(data => {
+        })
+        .catch(error => console.error(error));
+    }
+
+
+    // fonction qui s'execute que l'utyilisateur fait un refresh de la page
+    window.addEventListener('beforeunload', function (event) {
+        fetch('./php/update_player.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ id_player: id_player, steep: 0 })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(Data => {
+                setTimeout(function () {
+                    document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = sum;
+                    add_log_to_base(`<a>${nom}<a> a lancé les dés et a obtenu ${sum} points`);
+                    is_roll = true;
+                }, 500);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    });
+
+
 
 </script>
 

@@ -2,6 +2,7 @@
     $id_partie = $_POST['id_partie'];
     $id_last_message = $_POST['id_last_message'];
     $id_player = $_POST['id_player'];
+    $id_last_log = $_POST['id_last_log'];
 
     // Connexion à la base de données
     include 'connexion.php';
@@ -43,6 +44,14 @@
         WHERE id_partie = '$id_partie' AND joueurs_actifs.id_partie_link = '$id_partie' AND joueurs_actifs.numero_joueur = parties.tour_de_jeu";
         $result3 = mysqli_query($conn, $sql);
 
+        $sql = "SELECT log_messages.id_log_message, log_messages.txt, player_color.color
+                FROM log_messages
+                LEFT JOIN joueurs_actifs ON log_messages.id_player_link = joueurs_actifs.id_joueur
+                LEFT JOIN player_color ON joueurs_actifs.numero_joueur = player_color.id_color
+                WHERE log_messages.id_partie_link = '$id_partie' AND log_messages.id_log_message > '$id_last_log'";
+        $result4 = mysqli_query($conn, $sql);
+
+
 
         $data = [];
         if (mysqli_num_rows($result) > 0) {
@@ -65,7 +74,14 @@
             }
         }
 
-        echo json_encode(["data" => $data, "data2" => $data2, "game" => $data3]);
+        $data4 = [];
+        if (mysqli_num_rows($result4) > 0) {
+            while ($row = mysqli_fetch_assoc($result4)) {
+                $data4[] = $row;
+            }
+        }
+
+        echo json_encode(["data" => $data, "data2" => $data2, "game" => $data3, "log" => $data4]);
         return;
     }
 
