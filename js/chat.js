@@ -160,12 +160,12 @@ function add_log(txt,color){
     //select le <a> qu'il y a dans le texte h5
     let txtMessage = txt_.querySelector('a');
     if (txtMessage != null) {
-        console.log(txtMessage);
         txtMessage.style.color = color;
     }
     setTimeout(function(){
-        txtMessage.style.width = '80%';
+        divLogMessages.scrollTop = divLogMessages.scrollHeight;
     }, 100);
-    divLogMessages.scrollTop = divLogMessages.scrollHeight;
+
+    
 
 }

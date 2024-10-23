@@ -7,10 +7,12 @@
     include 'connexion.php';
 
     // Fonction pour créer une partie
-    $sql = "INSERT INTO log_messages (id_player_link,id_partie_link, txt) VALUES ('$id_player','$id_partie', '$txt')";
-    $result = mysqli_query($conn, $sql);
+    $stmt = $conn->prepare("INSERT INTO log_messages (id_player_link, id_partie_link, txt) VALUES (?, ?, ?)");
+    $stmt->bind_param("iis", $id_player, $id_partie, $txt);
+    $stmt->execute();
+    $stmt->close();
 
-    $sql = "UPDATE parties SET counter_modif = counter_modif + 1 WHERE id_partie = (SELECT id_partie_link FROM joueurs_actifs WHERE id_joueur = '$id_player')";
+    $sql = "UPDATE parties SET counter_modif = counter_modif + 1 WHERE id_partie = '$id_partie'";
     $result = mysqli_query($conn, $sql);
 
 
