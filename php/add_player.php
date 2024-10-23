@@ -99,6 +99,19 @@
     }
 
 
+    $sql ="SELECT numero_joueur FROM joueurs_actifs WHERE id_joueur = ?";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $id_joueur);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if ($row = mysqli_fetch_assoc($result)) {
+        $numero_joueur = (int)$row['numero_joueur'];
+    } else {
+        echo json_encode(["error" => "Joueur non trouvé"]);
+        exit();
+    }
+
 
 
     if ($result2) {
@@ -107,7 +120,8 @@
             "nb_joueur_conn" => $nb_joueur_conn + 1,
             "nb_joueur" => $nb_joueur,
             "id_joueur" => $id_joueur,
-            "id_pawn" => $id_pawn
+            "id_pawn" => $id_pawn,
+            "numero_joueur" => $numero_joueur
         ]);
     } else {
         echo json_encode(["error" => "Failed to update player count"]);

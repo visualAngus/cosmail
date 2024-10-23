@@ -287,7 +287,7 @@ svg {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 1000;
+    z-index: 100;
     width: 100%;
     height: 100%;
     display: flex;
@@ -432,7 +432,6 @@ svg {
     z-index: 1000;
     width: 25%;
     min-width: 350px;
-    height: 10%;
     min-height: 120px;
 
     transform: translateX(-50%) translateY(-300px);
@@ -451,10 +450,19 @@ svg {
     color: rgb(0, 0, 0);
     font-size: 1.2rem;
     font-weight: bold;
-    transition: all 0.5s ease;
     gap: 15px;
 
     opacity: 1;
 
-    transition: all 0.2s ease;
+    transition: all 0.5s ease;
+}
+
+#erreur_message{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
 }

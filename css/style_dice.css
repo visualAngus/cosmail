@@ -7,7 +7,7 @@
     border-radius: 10px;
 
 
-    cursor: pointer;
+    cursor:default;
 
     position: absolute;
     z-index: 90;
@@ -20,6 +20,24 @@
 .dice-container.active:active {
     background-color: #c5c4c4;
 }
+.dice-container.active{
+    animation: light 2s infinite;
+    cursor: pointer;
+
+}
+@keyframes light {
+    0% {
+        background-color: #e0e0e062;
+    }
+    50% {
+        background-color: #d9b25262;
+    }
+    100% {
+        background-color: #e0e0e062;
+    }
+}
+
+
 .die {
     font-size: 50px;
     padding: 10px;

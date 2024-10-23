@@ -223,11 +223,13 @@ function get_info_partie() {
                         let nb_joueurs = data["nb_joueur"];
                         let nb_joueur_conn = data["nb_joueur_conn"];
                         let id_player = data["id_joueur"];
+                        let numero_joueur = data["numero_joueur"];
                         // console.log(id_player);
 
                         localStorage.setItem('id_partie', id);
                         localStorage.setItem('id_player', id_player);
                         localStorage.setItem('id_start', nb_joueur_conn + 76);
+                        localStorage.setItem('numero_joueur', numero_joueur);
 
                         document.querySelector(".div_code").innerHTML = "<h3>Code de la partie : " + code + "</h3>";
                         let txt = "En attente des autres joueurs " + nb_joueur_conn + "/" + nb_joueurs;
