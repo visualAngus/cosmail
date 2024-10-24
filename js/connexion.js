@@ -80,7 +80,6 @@ function create_partie() {
                 .then(response => response.json())
                 .then(data => {
                     console.log(data);
-
                     if (data["error"]) {
                         error_txt.textContent = "Partie complète";
                         error_txt.style.color = "red";

@@ -5,7 +5,7 @@
     include 'connexion.php';
 
     // Fonction pour récupérer les informations d'une partie donnée
-    $sql = "SELECT parties.nb_joueur , joueurs_actifs.id_joueur , joueurs_actifs.point , cards.id_card , cards.etat , emplacement.nom as ville_nom, 
+    $sql = "SELECT parties.nb_joueur , joueurs_actifs.id_joueur , joueurs_actifs.score , cards.id_card , cards.etat , emplacement.nom as ville_nom, 
                     emplacement.val, emplacement.id_emplacement, cargaison_type.nom as cargaison_type_nom, cargaison_type.id as cargaison_type_id ,
                     color.color, joueurs_actifs.nom as joueur_nom
             FROM joueurs_actifs 

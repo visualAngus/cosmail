@@ -23,7 +23,7 @@
         echo json_encode(["message" => "No modification"]);
         return;
     }else{
-        $sql = "SELECT parties.etat, joueurs_actifs.id_joueur, joueurs_actifs.point, pawns.id_emplacement_link, pawns.etat,pawns.id_pawn
+        $sql = "SELECT parties.etat, joueurs_actifs.id_joueur, pawns.id_emplacement_link, pawns.etat,pawns.id_pawn
             FROM parties 
             LEFT JOIN joueurs_actifs ON parties.id_partie = joueurs_actifs.id_partie_link
             LEFT JOIN pawns ON joueurs_actifs.id_joueur = pawns.id_joueur_link
@@ -38,7 +38,7 @@
             WHERE parties.id_partie = '$id_partie' AND chat.id_chat > '$id_last_message' AND chat.id_player_link IS NOT NULL";
         $result2 = mysqli_query($conn, $sql);
 
-        $sql = "SELECT parties.etat, parties.tour_de_jeu as tour, joueurs_actifs.id_joueur, joueurs_actifs.nom, joueurs_actifs.steep
+        $sql = "SELECT parties.etat, parties.tour_de_jeu as tour, joueurs_actifs.id_joueur, joueurs_actifs.nom
         FROM parties 
         LEFT JOIN joueurs_actifs ON parties.id_partie = joueurs_actifs.id_partie_link
         WHERE id_partie = '$id_partie' AND joueurs_actifs.id_partie_link = '$id_partie' AND joueurs_actifs.numero_joueur = parties.tour_de_jeu";
@@ -51,6 +51,10 @@
                 WHERE log_messages.id_partie_link = '$id_partie' AND log_messages.id_log_message > '$id_last_log'";
         $result4 = mysqli_query($conn, $sql);
 
+        $sql = "SELECT joueurs_actifs.steep, joueurs_actifs.score
+                FROM joueurs_actifs 
+                WHERE joueurs_actifs.id_joueur = '$id_player'";
+        $result5 = mysqli_query($conn, $sql);
 
 
         $data = [];
@@ -81,7 +85,14 @@
             }
         }
 
-        echo json_encode(["data" => $data, "data2" => $data2, "game" => $data3, "log" => $data4]);
+        $data5 = [];
+        if (mysqli_num_rows($result5) > 0) {
+            while ($row = mysqli_fetch_assoc($result5)) {
+                $data5[] = $row;
+            }
+        }
+
+        echo json_encode(["data" => $data, "data2" => $data2, "game" => $data3, "log" => $data4, "player" => $data5]);
         return;
     }
 

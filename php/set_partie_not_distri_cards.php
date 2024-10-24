@@ -3,9 +3,9 @@
     $liste_emplacement = $_POST['liste_emplacement'];
     $id_partie = $_POST['id_partie'];
     // Connexion à la base de données
-    include 'connexion.php';
+    include './connexion.php';
 
-    $stmt = $conn->prepare("INSERT INTO joueurs_actifs (id_partie_link, point,type,nom) VALUES (?, ?, 1, 'Dealer')");
+    $stmt = $conn->prepare("INSERT INTO joueurs_actifs (id_partie_link, score,type,nom) VALUES (?, ?, 1, 'Dealer')");
     $point = 0;
     $stmt->bind_param("ii", $id_partie, $point);
     $result = $stmt->execute();

@@ -1,10 +1,8 @@
 <?php
 
 // Connexion à la base de données
-$conn = mysqli_connect("localhost", "root", "", "cosmail");
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
-}
+include './connexion.php';
+
 $id_partie_link = $_POST['id_partie'];
 
 $sql = "SELECT parties.nb_joueur_conn, parties.nb_joueur, parties.etat, joueurs_actifs.id_joueur, joueurs_actifs.nom

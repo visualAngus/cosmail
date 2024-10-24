@@ -157,7 +157,7 @@
 
                         nom = player['nom'];
                         document.getElementById('nom_joueur').innerText = nom;
-                        document.getElementsByClassName('div_point')[0].children[0].innerText = player['point'];
+                        document.getElementsByClassName('div_point')[0].children[0].innerText = player['score'];
                         document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = player['steep'];
                         localStorage.setItem('nb_steep', player['steep']);
                         localStorage.setItem('numero_joueur', player['numero_joueur']);
@@ -338,6 +338,7 @@
 
         click_down_plane = [event.clientX, event.clientY];
     }
+
     // deplacement de l'avion
     function move_to(id_pawn, id_ville, adjustedX, adjustedY, id_emplacement, valeur,who) {
         // let plane_tmp = document.querySelector(`.div_piont [data-ville="${id_ville}"]`);
@@ -348,7 +349,29 @@
         //     adjustedX += x;
         //     adjustedY += y;
         // }
+        
+        // verification si la ville fait partie des villes objectifs
 
+        ville_tmp = parseInt(id_ville);
+        if (isNaN(ville_tmp)) {
+            ville = id_ville.split('-')[0];
+            ville = ville.substring(3);
+            ville = ville.replace('_', '');
+            ville = parseInt(ville);
+        } else {
+            ville = id_ville;
+        }
+        ville = ville.toString();
+
+        console.log('ville', ville);
+        console.log('liste', liste_cartes);
+        let tmp_cartes = [];
+        if (liste_cartes.includes(ville) && who == 0) {
+            let carte = document.querySelector(`[carte_ville="${ville}"]`);
+            console.log(carte);
+            tmp_cartes.push(carte);
+        }
+        carte_trouvee(tmp_cartes);
 
         translates_plane[id_pawn] = [adjustedX, adjustedY];
         document.querySelector('.div_piont').querySelector(`#plane-${id_pawn}`).style.transition = 'transform 2s ease';
@@ -741,6 +764,7 @@
     document.addEventListener('mouseup', function (event) {
         dragging = false;
         plane_dragging = false;
+        is_slider_selected= false;
     });
 
     document.addEventListener('wheel', function (event) {
@@ -851,8 +875,6 @@
                     if (messages[i]['id_player_link'] == id_player) {
                         ext = 'int';
                     }
-
-
                     add_message(messages[i]['chat'], messages[i]['nom'], ext, messages[i]['color']);
                     id_last_message = messages[i]['id_chat'];
                 }
@@ -871,14 +893,19 @@
                     let nom = game['nom'];
                     show_erreur(`C'est ${nom} qui joue`, 'Message');
                 }
-                document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = game['steep'];
-                localStorage.setItem('nb_steep', game['steep']);
 
                 let log = Data['log'];
                 for (let i = 0; i < log.length; i++) {
                     add_log(log[i]['txt'], log[i]['color']);
                     id_last_log = log[i]['id_log_message'];
                 }
+
+                let player_data = Data.player[0];
+                
+                document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = player_data['steep'];
+                localStorage.setItem('nb_steep', player_data['steep']);
+                
+                document.getElementsByClassName('div_point')[0].children[0].innerText = player_data['score'];
 
             })
             .catch(error => {
@@ -982,9 +1009,9 @@
         document.getElementById('die2').textContent = "🎲";
         document.querySelector('.dice-container').classList.remove('active');
         document.querySelector('.btn_tour').classList.remove('active');
+        document.getElementsByClassName('div_nb_steep')[0].children[1].innerText = 0;
 
-
-
+        
         fetch('./php/next_round.php', {
             method: 'POST',
             headers: {

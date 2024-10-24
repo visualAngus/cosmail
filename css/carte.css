@@ -1,25 +1,13 @@
-body {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: flex-start;
-
-    overflow: hidden;
-}
-
 .div_all_cards {
     position: absolute;
     z-index: 100;
-    height: 160px;
-    max-width: 90vw;
+    height: 170px;
     bottom: 0;
     right: 0;
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
-    align-items: flex-end;
+    align-items: flex-start;
 
     user-select: none;
     padding: 10px;
@@ -28,8 +16,10 @@ body {
     /* pointer-events: none; */
 }
 
+
 .div_carte_main {
     position: absolute;
+    
     width: 250px;
     height: 150px;
     border-radius: 5px;
@@ -92,4 +82,75 @@ body {
 .opponent{
     user-select: none;
     pointer-events: none;
+}
+
+
+.carte_trouvee_animation {
+    animation: carte_trouvee 5s ease forwards; /* Utilise 'forwards' pour garder la position finale */
+}
+.carte_trouvee_animation::after{
+    content: "Carte trouvée";
+    opacity: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%) rotate(-45deg);
+    color: rgb(199, 25, 25);
+    font-size: 1.5rem;
+    font-weight: bold;
+    z-index: 100;
+    width: 200px;
+    
+    animation: opacite 5s ease forwards; /* Utilise 'forwards' pour garder la position finale */
+}
+
+@keyframes carte_trouvee {
+    0% {
+        transform: translate(0, 0); /* Position d'origine */
+    }
+    45% {  
+        transform: translate(calc(-50vw + 125px), -35vh); /* Centre de la page + ajustement */
+    }
+    50% {
+        transform: translate(calc(-50vw + 125px), -35vh); /* Centre de la page + ajustement */
+    }
+    100% {
+        transform: translate(0, 0); /* Retour à la position d'origine */
+    }
+}
+
+
+@keyframes opacite {
+    0% {
+        opacity: 0;
+    }
+    45% {  
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.9;
+    }
+    100% {
+        opacity: 0.9;
+    }
+}
+
+
+.carte_trouvee{
+    filter: grayscale(50%);
+    background-color: gray;
+
+}
+.carte_trouvee::after{
+    content: "Carte trouvée";
+    opacity: 1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%) rotate(-45deg);
+    color: rgb(199, 25, 25);
+    font-size: 1.5rem;
+    font-weight: bold;
+    z-index: 100;
+    width: 200px;
 }

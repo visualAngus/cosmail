@@ -1,7 +1,7 @@
 <?php
 
     // Connexion à la base de données
-    include 'connexion.php';
+    include './connexion.php';
     
     $id_partie_link = $_POST['id_partie'];; // Replace with actual value
     $nom = $_POST['nom'];; // Replace with actual value
@@ -29,7 +29,7 @@
 
 
     // Fonction pour récupérer les informations d'une partie donnée
-    $sql = "INSERT INTO joueurs_actifs (id_partie_link, point, type, nom) VALUES (?, 0, 0, ?)";
+    $sql = "INSERT INTO joueurs_actifs (id_partie_link, score, type, nom) VALUES (?, 0, 0, ?)";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, "ss", $id_partie_link, $nom);
     mysqli_stmt_execute($stmt);

@@ -23,6 +23,9 @@
         $num_player = $num_player + 1;
     }
 
+    $sql = "UPDATE joueurs_actifs SET steep = 0 WHERE id_joueur = $id_player";
+    $result = mysqli_query($conn, $sql);
+
     // Requête pour mettre à jour l'emplacement du pion
     $sql = "UPDATE parties SET tour_de_jeu = $num_player WHERE id_partie  = $id_partie";
     $result = mysqli_query($conn, $sql);
@@ -36,8 +39,6 @@
     $nb_joueur = mysqli_fetch_assoc($result);
     $nb_joueur = $nb_joueur['id_joueur'];
 
-    $sql = "UPDATE joueurs_actifs SET steep = 0 WHERE id_joueur = $nb_joueur AND id_partie_link = $id_partie";
-    $result2 = mysqli_query($conn, $sql);
 
     
     $sql = "UPDATE parties SET counter_modif = counter_modif + 1 WHERE id_partie = (SELECT id_partie_link FROM joueurs_actifs WHERE id_joueur = '$id_player')";
